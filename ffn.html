@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3.1 Feed Forward Networks (MLPs) — Deep Learning Architectures</title>
+<style>
+  :root{
+    --cream:#F5F0E8; --cream2:#FBF7F0; --charcoal:#2B2620; --ink:#4a4030;
+    --gold:#C9A227; --gold-soft:#E8D9A8; --line:#E0D8C8; --line2:#D8CFC0;
+    --teal:#0F6E56; --coral:#993C1D; --blue:#185FA5;
+    --mut:#6b6253;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0; background:var(--cream); color:var(--charcoal);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65; font-size:16px;
+  }
+  .wrap{max-width:860px; margin:0 auto; padding:0 24px;}
+
+  /* ---- top nav ---- */
+  .topnav{
+    position:sticky; top:0; z-index:50; background:rgba(245,240,232,.92);
+    backdrop-filter:blur(8px); border-bottom:1px solid var(--line2);
+  }
+  .topnav .wrap{display:flex; gap:6px; flex-wrap:wrap; align-items:center; padding-top:10px; padding-bottom:10px;}
+  .topnav a{
+    font-size:12.5px; text-decoration:none; color:var(--ink);
+    padding:5px 11px; border-radius:20px; border:1px solid transparent; white-space:nowrap;
+  }
+  .topnav a:hover{background:var(--cream2); border-color:var(--line2);}
+  .topnav a.brand{font-weight:700; color:var(--charcoal); padding-left:0; margin-right:6px;}
+  .topnav a.brand:hover{background:none; border-color:transparent;}
+
+  /* ---- hero ---- */
+  header.hero{padding:56px 0 34px;}
+  .eyebrow{
+    display:inline-block; font-size:12px; letter-spacing:.16em; text-transform:uppercase;
+    color:var(--gold); font-weight:700; border:1px solid var(--gold-soft);
+    padding:5px 12px; border-radius:20px; background:var(--cream2);
+  }
+  h1{font-size:40px; line-height:1.1; margin:20px 0 8px; font-weight:800; letter-spacing:-.02em;}
+  .sub{font-size:18px; color:var(--mut); max-width:620px;}
+  .rule{height:3px; width:88px; background:var(--gold); border-radius:2px; margin:26px 0 0;}
+
+  /* ---- section scaffolding ---- */
+  section{padding:34px 0; border-top:1px solid var(--line);}
+  .sec-no{
+    font-size:13px; font-weight:700; color:var(--gold); letter-spacing:.12em; text-transform:uppercase;
+  }
+  .sec-tag{font-size:13px; color:var(--mut); margin-left:8px;}
+  h2{font-size:27px; margin:8px 0 6px; font-weight:800; letter-spacing:-.01em;}
+  h3{font-size:18px; margin:26px 0 6px; font-weight:700; color:var(--ink);
+     border-bottom:1px solid var(--line); padding-bottom:5px;}
+  p{margin:12px 0;}
+  .lead{font-size:17px;}
+  em.k{font-style:normal; font-weight:700; color:var(--charcoal); background:var(--gold-soft); padding:0 4px; border-radius:3px;}
+
+  /* ---- callout boxes ---- */
+  .box{border-radius:12px; padding:18px 20px; margin:18px 0; border:1px solid var(--line2);}
+  .box .lbl{font-size:11px; letter-spacing:.14em; text-transform:uppercase; font-weight:700; margin-bottom:6px;}
+  .analogy{background:var(--cream2); border-left:4px solid var(--gold); border-radius:0 12px 12px 0;}
+  .analogy .lbl{color:var(--gold);}
+  .formula{background:var(--charcoal); color:#f3ecd9; border:none; font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace;}
+  .formula .lbl{color:var(--gold-soft);}
+  .formula pre{margin:0; font-size:14px; line-height:1.7; white-space:pre-wrap; overflow-x:auto;}
+  .formula .note{color:#b8ab8a; font-size:12.5px; margin-top:10px; font-family:inherit;}
+  .worked{background:#fff; border:1px solid var(--line2);}
+  .worked .lbl{color:var(--teal);}
+  .worked pre{margin:0; font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace;
+    font-size:13px; line-height:1.75; white-space:pre-wrap; overflow-x:auto; color:#33302a;}
+  .worked .takeaway{margin-top:12px; padding-top:12px; border-top:1px dashed var(--line2);
+    font-size:14px; color:var(--ink);}
+  .flaw{background:#FAECE7; border-left:4px solid var(--coral); border-radius:0 12px 12px 0;}
+  .flaw .lbl{color:var(--coral);}
+
+  blockquote{margin:22px 0; padding:4px 0 4px 22px; border-left:3px solid var(--gold);
+    font-size:19px; font-style:italic; color:var(--ink); line-height:1.5;}
+  blockquote cite{display:block; font-size:13px; font-style:normal; color:var(--mut); margin-top:8px;}
+
+  /* ---- table ---- */
+  table{width:100%; border-collapse:collapse; margin:18px 0; font-size:14.5px;}
+  th{background:var(--charcoal); color:#fff; text-align:left; padding:10px 13px; font-weight:600;}
+  th:first-child{border-radius:8px 0 0 0;} th:last-child{border-radius:0 8px 0 0;}
+  td{border:1px solid var(--line2); padding:9px 13px; vertical-align:top;}
+  tr:nth-child(even) td{background:var(--cream2);}
+  td strong{color:var(--charcoal);}
+
+  /* ---- bottom line ---- */
+  .bottomline{background:var(--charcoal); color:#f3ecd9; border-radius:12px; padding:22px 24px; margin:22px 0 0;}
+  .bottomline .lbl{color:var(--gold); font-size:11px; letter-spacing:.14em; text-transform:uppercase; font-weight:700;}
+  .bottomline p{margin:8px 0 0; color:#ece4d2;}
+
+  /* ---- interactive demo ---- */
+  .demo{background:#fff; border:1px solid var(--line2); border-radius:14px; padding:20px; margin:20px 0;}
+  .demo h4{margin:0 0 4px; font-size:16px; font-weight:700;}
+  .demo .hint{font-size:13px; color:var(--mut); margin:0 0 14px;}
+  .net-stage{display:flex; flex-wrap:wrap; gap:18px;}
+  .net-svg-wrap{flex:1 1 420px; min-width:300px;}
+  svg.net{width:100%; height:auto; display:block;}
+  .controls{flex:1 1 230px; min-width:230px;}
+  .ctrl{margin-bottom:14px;}
+  .ctrl label{font-size:13px; color:var(--ink); display:flex; justify-content:space-between; margin-bottom:5px; font-weight:600;}
+  .ctrl label span{color:var(--gold); font-variant-numeric:tabular-nums;}
+  input[type=range]{width:100%; accent-color:var(--gold); height:4px;}
+  .seg{display:flex; gap:6px; margin-top:4px; flex-wrap:wrap;}
+  .seg button{flex:1; font-size:12.5px; padding:6px 8px; border:1px solid var(--line2);
+    background:var(--cream2); border-radius:7px; cursor:pointer; color:var(--ink); min-width:64px;}
+  .seg button.on{background:var(--gold); color:#fff; border-color:var(--gold); font-weight:600;}
+  .outcard{margin-top:6px; background:var(--cream2); border-radius:10px; padding:14px; text-align:center;}
+  .outcard .olbl{font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--mut);}
+  .outcard .oval{font-size:30px; font-weight:800; font-variant-numeric:tabular-nums; line-height:1.2; margin-top:2px;}
+  .outcard .ostate{font-size:13px; font-weight:600; margin-top:2px;}
+  .legend{display:flex; gap:16px; flex-wrap:wrap; font-size:12px; color:var(--mut); margin-top:12px;}
+  .legend i{display:inline-block; width:11px; height:11px; border-radius:3px; vertical-align:-1px; margin-right:5px;}
+
+  .node-circle{transition:fill .15s, r .15s;}
+  .edge{transition:stroke-width .15s, stroke-opacity .15s;}
+  .nlabel{font-size:11px; fill:var(--mut); font-family:inherit;}
+  .nval{font-size:11px; font-weight:700; font-family:"SF Mono",monospace;}
+
+  footer{padding:40px 0 60px; border-top:1px solid var(--line); color:var(--mut); font-size:14px;}
+  .nextbtn{display:inline-block; margin-top:8px; background:var(--charcoal); color:#fff; text-decoration:none;
+    padding:11px 20px; border-radius:9px; font-size:14px; font-weight:600;}
+
+  @media (max-width:560px){
+    h1{font-size:31px;} h2{font-size:23px;}
+    .wrap{padding:0 16px;}
+  }
+</style>
+</head>
+<body>
+
+<nav class="topnav"><div class="wrap">
+  <a href="#top" class="brand">Ch 3 · Deep Learning Architectures</a>
+  <a href="#intro">Intro</a>
+  <a href="#analogy">Analogy</a>
+  <a href="#how">How it works</a>
+  <a href="#math">The math</a>
+  <a href="#worked">Worked example</a>
+  <a href="#demo">Live demo</a>
+  <a href="#why">Why depth</a>
+  <a href="#props">Properties</a>
+  <a href="#bottom">Bottom line</a>
+</div></nav>
+
+<div class="wrap" id="top">
+
+<header class="hero" id="intro">
+  <span class="eyebrow">3.1 · Feed Forward Networks</span>
+  <h1>The Multilayer Perceptron</h1>
+  <p class="sub">The simplest deep network — and the blueprint every other architecture is built on. One direction, no memory, layer by layer.</p>
+  <div class="rule"></div>
+</header>
+
+<section style="border-top:none; padding-top:8px;">
+  <p class="lead">A feed forward network — also called a <em class="k">multilayer perceptron (MLP)</em> — is the simplest deep neural network. Information flows in exactly one direction: from the input, through one or more hidden layers, to the output. No loops, no memory of previous inputs, no feedback. Every architecture you will meet later in this chapter — CNNs, RNNs, LSTMs, and ultimately Transformers — is a specialization or extension of this one idea.</p>
+
+  <p>The name is literal. Data is <em>fed forward</em>, one layer at a time. Each layer takes the previous layer's output, multiplies it by a matrix of weights, adds a bias, applies an activation function — the non-linearity — and hands the result to the next layer. Stack enough of these and the network can approximate essentially any continuous function. That guarantee has a name: the <em class="k">universal approximation theorem</em>, and it is the theoretical reason MLPs matter at all.</p>
+</section>
+
+<section id="analogy">
+  <span class="sec-no">01</span><span class="sec-tag">Building the intuition</span>
+  <h2>A corporate approval chain</h2>
+  <div class="box analogy">
+    <div class="lbl">Analogy</div>
+    <p style="margin-top:0;">Picture a loan application moving through a bank. A junior analyst sees the raw facts — income, credit score, loan amount — and forms an initial read. They pass a short summary up to a manager, who combines several analysts' reads into a higher-level judgment. The manager passes that to a director, who makes the final call.</p>
+    <p style="margin-bottom:0;">Each level <strong>transforms what it received into something more abstract</strong>, and information only flows upward — the director never kicks the file back to the analyst mid-decision. That one-directional, layer-by-layer abstraction is exactly an MLP. The raw facts are the input layer, the analysts and managers are hidden layers building ever more useful representations, and the director is the output layer producing the answer.</p>
+  </div>
+</section>
+
+<section id="how">
+  <span class="sec-no">02</span><span class="sec-tag">Mechanics</span>
+  <h2>How it works</h2>
+  <p>The atom of the network is a single <em class="k">neuron</em>. It does two things, in order: a weighted sum of its inputs, then a transformation of that sum.</p>
+
+  <p>A single <strong>layer</strong> performs this for many neurons at once — which is just a matrix multiplication followed by an element-wise activation. A <strong>network</strong> chains layers together. The real work happens in the hidden layers: the input layer merely holds your raw features and the output layer produces the final answer, but the hidden layers in between learn <em>intermediate representations</em> — edges then shapes then objects in a vision network; syntax then meaning in a language one.</p>
+
+  <h3 id="math">The math that matters</h3>
+  <div class="box formula">
+    <div class="lbl">Formula · one neuron, then one layer</div>
+<pre>Single neuron:
+   z = (w · x) + b           weighted sum
+   a = f(z)                  activation (non-linearity)
+
+Whole layer (vectorized):
+   z⁽ˡ⁾ = W⁽ˡ⁾ a⁽ˡ⁻¹⁾ + b⁽ˡ⁾
+   a⁽ˡ⁾ = f(z⁽ˡ⁾)
+
+Forward pass = repeat layer-by-layer, input → output</pre>
+    <div class="note">W is the weight matrix for layer l, b its bias vector, f the activation. The output of one layer (a⁽ˡ⁻¹⁾) is the input to the next. That chaining is the entire feed forward computation.</div>
+  </div>
+
+  <p>Without the activation function <code>f</code>, this whole stack collapses. A chain of matrix multiplications is itself just one matrix multiplication — a thousand linear layers would equal a single linear layer, and the network could only ever draw straight decision boundaries. The non-linearity at each layer is what lets depth actually buy you expressive power. (This is why Chapter 2's activation functions come <em>before</em> architectures — they're the ingredient that makes depth meaningful.)</p>
+</section>
+
+<section id="worked">
+  <span class="sec-no">03</span><span class="sec-tag">Numbers on paper</span>
+  <h2>Worked example — a 3→2→1 network</h2>
+  <p>A tiny network that decides whether to approve a loan. Three inputs, one hidden layer of two neurons (ReLU), one output neuron (sigmoid, giving an approval probability).</p>
+
+  <div class="box worked">
+    <div class="lbl">Worked Example · forward pass</div>
+<pre>Inputs:   x = [income=0.7,  credit=0.6,  amount=0.4]
+
+HIDDEN LAYER (2 neurons, ReLU)
+ Neuron h1:  w=[0.5, 0.4, -0.2],  b=0.1
+   z1 = 0.7(0.5) + 0.6(0.4) + 0.4(-0.2) + 0.1
+      = 0.35 + 0.24 - 0.08 + 0.1 = 0.61
+   a1 = ReLU(0.61) = 0.61
+
+ Neuron h2:  w=[-0.3, 0.6, 0.5],  b=-0.2
+   z2 = 0.7(-0.3) + 0.6(0.6) + 0.4(0.5) - 0.2
+      = -0.21 + 0.36 + 0.20 - 0.2 = 0.15
+   a2 = ReLU(0.15) = 0.15
+
+OUTPUT LAYER (1 neuron, sigmoid)
+   w=[0.9, 0.7],  b=-0.3
+   z  = 0.61(0.9) + 0.15(0.7) - 0.3
+      = 0.549 + 0.105 - 0.3 = 0.354
+   y  = sigmoid(0.354) = 1 / (1 + e^-0.354)
+      = 0.588   →   58.8% approval probability</pre>
+    <div class="takeaway"><strong>Read the flow:</strong> three raw numbers became two hidden activations (a learned intermediate representation), which became one probability. Every value moved strictly left to right. Change any weight and the whole downstream result shifts — that is exactly what training adjusts. Try it live below.</div>
+  </div>
+</section>
+
+<section id="demo">
+  <span class="sec-no">04</span><span class="sec-tag">Interactive</span>
+  <h2>Run the network yourself</h2>
+  <p>This is the same 3→2→1 network from the worked example, live. Drag the inputs and watch every activation propagate forward in real time. Switch the hidden activation between ReLU, sigmoid, and tanh to feel how the non-linearity reshapes what flows through. Edge thickness shows signal strength; node brightness shows activation.</p>
+
+  <div class="demo">
+    <div class="net-stage">
+      <div class="net-svg-wrap">
+        <svg class="net" viewBox="0 0 420 300" id="netsvg" aria-label="Interactive feed forward network diagram"></svg>
+        <div class="legend">
+          <span><i style="background:var(--gold)"></i>High activation</span>
+          <span><i style="background:#E8D9A8"></i>Low / zero</span>
+          <span><i style="background:var(--blue)"></i>Signal edge</span>
+        </div>
+      </div>
+      <div class="controls">
+        <div class="ctrl">
+          <label>Income (x₁) <span id="v0">0.70</span></label>
+          <input type="range" id="x0" min="0" max="1" step="0.01" value="0.7">
+        </div>
+        <div class="ctrl">
+          <label>Credit score (x₂) <span id="v1">0.60</span></label>
+          <input type="range" id="x1" min="0" max="1" step="0.01" value="0.6">
+        </div>
+        <div class="ctrl">
+          <label>Loan amount (x₃) <span id="v2">0.40</span></label>
+          <input type="range" id="x2" min="0" max="1" step="0.01" value="0.4">
+        </div>
+        <div class="ctrl">
+          <label>Hidden activation</label>
+          <div class="seg" id="actseg">
+            <button data-act="relu" class="on">ReLU</button>
+            <button data-act="sigmoid">Sigmoid</button>
+            <button data-act="tanh">Tanh</button>
+          </div>
+        </div>
+        <div class="outcard">
+          <div class="olbl">Output · approval probability</div>
+          <div class="oval" id="outval">0.588</div>
+          <div class="ostate" id="outstate">Approve ✓</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <p style="font-size:14px; color:var(--mut);">Notice: with ReLU, a hidden neuron whose weighted sum goes negative outputs a flat zero and stops contributing — you can watch a node go dark. With tanh, signals get squashed toward the −1…1 band and the output moves more gently. Same wiring, different feel, entirely because of the activation choice.</p>
+</section>
+
+<section id="why">
+  <span class="sec-no">05</span><span class="sec-tag">Why it matters</span>
+  <h2>Why depth, and where MLPs stop</h2>
+  <p>Stacking hidden layers lets the network compose simple features into complex ones. Layer one might learn to detect rough combinations of inputs; layer two combines those into higher-order patterns; and so on. This <em class="k">hierarchical feature learning</em> is the whole reason "deep" learning is deep — and it is why a two-layer network often dramatically outperforms a one-layer network on the same data, despite the universal approximation theorem technically promising that even one wide hidden layer <em>could</em> fit the function. Depth is more parameter-efficient than width.</p>
+
+  <div class="box flaw">
+    <div class="lbl">The limitation that drives the rest of this chapter</div>
+    <p style="margin-top:0;">A plain MLP treats every input as an independent, fixed-size, unordered vector. It has <strong>no notion of space</strong> (a pixel's neighbors mean nothing to it) and <strong>no notion of sequence or memory</strong> (it can't tell "dog bites man" from "man bites dog"). Feed it a 200×200 image and you need 40,000 input weights per first-layer neuron — wasteful and blind to structure.</p>
+    <p style="margin-bottom:0;">Those two gaps are exactly what the next architectures fix. <strong>CNNs (3.2)</strong> add spatial structure through shared filters. <strong>RNNs (3.3)</strong> add sequence and memory through recurrence. The MLP is the foundation; the rest of Chapter 3 is the story of giving it the senses it lacks.</p>
+  </div>
+
+  <blockquote>
+    The multilayer perceptron proved that stacking simple non-linear units could approximate anything. What it couldn't do — see space, remember order — is precisely why every architecture after it exists.
+    <cite>On why the MLP is the starting point, not the destination</cite>
+  </blockquote>
+</section>
+
+<section id="props">
+  <span class="sec-no">06</span><span class="sec-tag">At a glance</span>
+  <h2>Properties</h2>
+  <table>
+    <tr><th>Property</th><th>Value</th><th>Notes</th></tr>
+    <tr><td><strong>Information flow</strong></td><td>One direction</td><td>Input → hidden → output, no loops or feedback</td></tr>
+    <tr><td><strong>Memory of past inputs</strong></td><td>None</td><td>Each input processed independently — no sequence awareness</td></tr>
+    <tr><td><strong>Core operation</strong></td><td>Wx + b, then f()</td><td>Matrix multiply plus a non-linear activation, per layer</td></tr>
+    <tr><td><strong>Key theorem</strong></td><td>Universal approximation</td><td>One sufficiently wide hidden layer can approximate any continuous function</td></tr>
+    <tr><td><strong>Why go deep</strong></td><td>Feature hierarchy</td><td>Depth composes features more efficiently than width alone</td></tr>
+    <tr><td><strong>Blind spots</strong></td><td>Space &amp; sequence</td><td>No spatial or temporal structure — motivates CNNs and RNNs</td></tr>
+    <tr><td><strong>Best use today</strong></td><td>Tabular data, final heads</td><td>Structured/tabular inputs, and as the output layers inside larger models</td></tr>
+  </table>
+</section>
+
+<section id="bottom" style="padding-bottom:10px;">
+  <div class="bottomline">
+    <div class="lbl">Bottom Line</div>
+    <p>The MLP is the foundation of deep learning: layers of weighted sums and non-linear activations, information flowing strictly forward. It can in principle approximate any function, and depth lets it do so efficiently by building a hierarchy of features. But it is blind to the structure of its inputs — it sees neither space nor sequence. Understand the MLP completely, because everything that follows in this chapter is an MLP given a new sense: CNNs see space, RNNs remember sequence, and Transformers learn what to pay attention to.</p>
+  </div>
+</section>
+
+<footer>
+  <p><strong>Next up — 3.2 Convolutional Neural Networks.</strong> How shared filters give a network the sense of <em>space</em> the MLP lacks: convolution, pooling, filters, and channels, in the same format.</p>
+  <p style="font-size:13px;">Chapter 3 · Deep Learning Architectures &nbsp;·&nbsp; Lead AI Engineer curriculum &nbsp;·&nbsp; Track B</p>
+</footer>
+
+</div>
+
+<script>
+(function(){
+  // ---- network definition (matches worked example) ----
+  var W1=[[0.5,0.4,-0.2],[-0.3,0.6,0.5]], b1=[0.1,-0.2];
+  var W2=[0.9,0.7], b2=-0.3;
+  var x=[0.7,0.6,0.4];
+  var act="relu";
+
+  function relu(z){return Math.max(0,z);}
+  function sigmoid(z){return 1/(1+Math.exp(-z));}
+  function tanh(z){return Math.tanh(z);}
+  function hidden(z){return act==="relu"?relu(z):act==="sigmoid"?sigmoid(z):tanh(z);}
+
+  function forward(){
+    var z1=[0,0],a1=[0,0];
+    for(var j=0;j<2;j++){
+      var s=b1[j];
+      for(var i=0;i<3;i++){s+=W1[j][i]*x[i];}
+      z1[j]=s; a1[j]=hidden(s);
+    }
+    var z=b2; for(var k=0;k<2;k++){z+=W2[k]*a1[k];}
+    var y=sigmoid(z);
+    return {z1:z1,a1:a1,z:z,y:y};
+  }
+
+  // ---- svg geometry ----
+  var NS="http://www.w3.org/2000/svg";
+  var svg=document.getElementById("netsvg");
+  var cols={in:70, hid:210, out:350};
+  var inY=[70,150,230], hidY=[95,205], outY=[150];
+  var inLabels=["x₁","x₂","x₃"], hidLabels=["h₁","h₂"];
+
+  function el(tag,attrs){var e=document.createElementNS(NS,tag);for(var k in attrs){e.setAttribute(k,attrs[k]);}return e;}
+  function lerpColor(t){ // t 0..1 from cream-gold to gold
+    t=Math.max(0,Math.min(1,t));
+    var c0=[232,217,168], c1=[201,162,39];
+    var r=Math.round(c0[0]+(c1[0]-c0[0])*t),
+        g=Math.round(c0[1]+(c1[1]-c0[1])*t),
+        b=Math.round(c0[2]+(c1[2]-c0[2])*t);
+    return "rgb("+r+","+g+","+b+")";
+  }
+
+  var edges=[], nodes=[], valTexts=[];
+
+  function build(){
+    svg.innerHTML="";
+    // edges input->hidden
+    for(var j=0;j<2;j++){
+      for(var i=0;i<3;i++){
+        var e=el("line",{x1:cols.in,y1:inY[i],x2:cols.hid,y2:hidY[j],
+          stroke:"#185FA5","stroke-opacity":0.25,"stroke-width":1.5,class:"edge"});
+        svg.appendChild(e); edges.push({e:e,kind:"ih",i:i,j:j});
+      }
+    }
+    // edges hidden->output
+    for(var k=0;k<2;k++){
+      var e2=el("line",{x1:cols.hid,y1:hidY[k],x2:cols.out,y2:outY[0],
+        stroke:"#185FA5","stroke-opacity":0.25,"stroke-width":1.5,class:"edge"});
+      svg.appendChild(e2); edges.push({e:e2,kind:"ho",k:k});
+    }
+    // layer captions
+    [["Input",cols.in],["Hidden (ReLU)",cols.hid],["Output",cols.out]].forEach(function(c){
+      var t=el("text",{x:c[1],y:24,"text-anchor":"middle",class:"nlabel"}); t.textContent=c[0];
+      svg.appendChild(t); if(c[0].indexOf("Hidden")===0){captionHidden=t;}
+    });
+    // nodes
+    function node(cx,cy,label){
+      var c=el("circle",{cx:cx,cy:cy,r:18,fill:"#E8D9A8",stroke:"#C9A227","stroke-width":1.2,class:"node-circle"});
+      svg.appendChild(c);
+      var lt=el("text",{x:cx,y:cy-24,"text-anchor":"middle",class:"nlabel"}); lt.textContent=label; svg.appendChild(lt);
+      var vt=el("text",{x:cx,y:cy+4,"text-anchor":"middle",class:"nval",fill:"#2B2620"}); svg.appendChild(vt);
+      return {c:c,vt:vt};
+    }
+    nodes=[];
+    for(var a=0;a<3;a++){nodes.push(node(cols.in,inY[a],inLabels[a]));}
+    for(var bn=0;bn<2;bn++){nodes.push(node(cols.hid,hidY[bn],hidLabels[bn]));}
+    nodes.push(node(cols.out,outY[0],"y"));
+  }
+  var captionHidden=null;
+
+  function update(){
+    var f=forward();
+    // node values + colors
+    var inActs=x.slice();
+    var hidActs=f.a1, hidMax=Math.max(0.001,Math.abs(f.a1[0]),Math.abs(f.a1[1]),1);
+    for(var i=0;i<3;i++){
+      nodes[i].vt.textContent=x[i].toFixed(2);
+      nodes[i].c.setAttribute("fill",lerpColor(x[i]));
+    }
+    for(var j=0;j<2;j++){
+      var disp=f.a1[j];
+      nodes[3+j].vt.textContent=disp.toFixed(2);
+      var norm=act==="tanh"?(disp+1)/2:Math.min(1,Math.abs(disp));
+      nodes[3+j].c.setAttribute("fill",lerpColor(norm));
+      // dim a dead ReLU node
+      nodes[3+j].c.setAttribute("r", (act==="relu"&&disp===0)?14:18);
+    }
+    nodes[5].vt.textContent=f.y.toFixed(2);
+    nodes[5].c.setAttribute("fill",lerpColor(f.y));
+
+    // edges thickness ~ |weight*input|
+    edges.forEach(function(ed){
+      if(ed.kind==="ih"){
+        var contrib=Math.abs(W1[ed.j][ed.i]*x[ed.i]);
+        ed.e.setAttribute("stroke-width",(1+contrib*7).toFixed(2));
+        ed.e.setAttribute("stroke-opacity",(0.2+Math.min(0.7,contrib*1.3)).toFixed(2));
+      }else{
+        var contrib2=Math.abs(W2[ed.k]*f.a1[ed.k]);
+        ed.e.setAttribute("stroke-width",(1+contrib2*7).toFixed(2));
+        ed.e.setAttribute("stroke-opacity",(0.2+Math.min(0.7,contrib2*1.3)).toFixed(2));
+      }
+    });
+
+    // output card
+    document.getElementById("outval").textContent=f.y.toFixed(3);
+    var ostate=document.getElementById("outstate");
+    if(f.y>=0.5){ostate.textContent="Approve ✓"; ostate.style.color="#0F6E56";}
+    else{ostate.textContent="Decline ✕"; ostate.style.color="#993C1D";}
+
+    if(captionHidden){captionHidden.textContent="Hidden ("+(act==="relu"?"ReLU":act==="sigmoid"?"Sigmoid":"Tanh")+")";}
+  }
+
+  // ---- wire controls ----
+  ["x0","x1","x2"].forEach(function(id,idx){
+    var s=document.getElementById(id);
+    s.addEventListener("input",function(){
+      x[idx]=parseFloat(s.value);
+      document.getElementById("v"+idx).textContent=x[idx].toFixed(2);
+      update();
+    });
+  });
+  var seg=document.getElementById("actseg");
+  seg.querySelectorAll("button").forEach(function(btn){
+    btn.addEventListener("click",function(){
+      seg.querySelectorAll("button").forEach(function(b){b.classList.remove("on");});
+      btn.classList.add("on"); act=btn.getAttribute("data-act"); update();
+    });
+  });
+
+  build(); update();
+})();
+</script>
+
+</body>
+</html>

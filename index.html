@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="DataMavericks — interactive deep learning and AI engineering lessons. Learn the architectures behind modern AI, one interactive page at a time.">
+<title>DataMavericks · Interactive AI Engineering</title>
+<style>
+  :root{
+    --cream:#F5F0E8; --cream2:#FBF7F0; --charcoal:#2B2620; --ink:#4a4030;
+    --gold:#C9A227; --gold-soft:#E8D9A8; --line:#E0D8C8; --line2:#D8CFC0; --mut:#6b6253;
+    --teal:#0F6E56;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{margin:0; background:var(--cream); color:var(--charcoal);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.6; font-size:16px;}
+  .wrap{max-width:920px; margin:0 auto; padding:0 24px;}
+
+  header.top{padding:18px 0; border-bottom:1px solid var(--line2);
+    position:sticky; top:0; background:rgba(245,240,232,.92); backdrop-filter:blur(8px); z-index:10;}
+  header.top .wrap{display:flex; align-items:center; justify-content:space-between;}
+  .logo{font-weight:800; font-size:18px; letter-spacing:-.01em;}
+  .logo span{color:var(--gold);}
+  .top nav a{font-size:13.5px; text-decoration:none; color:var(--ink); margin-left:18px;}
+  .top nav a:hover{color:var(--gold);}
+
+  .hero{padding:72px 0 40px; text-align:center;}
+  .eyebrow{display:inline-block; font-size:12px; letter-spacing:.16em; text-transform:uppercase;
+    color:var(--gold); font-weight:700; border:1px solid var(--gold-soft); padding:5px 14px;
+    border-radius:20px; background:var(--cream2);}
+  h1{font-size:48px; line-height:1.08; margin:22px 0 12px; font-weight:800; letter-spacing:-.025em;}
+  h1 .accent{color:var(--gold);}
+  .hero p{font-size:19px; color:var(--mut); max-width:600px; margin:0 auto;}
+  .rule{height:3px; width:90px; background:var(--gold); border-radius:2px; margin:30px auto 0;}
+
+  section{padding:30px 0;}
+  .sec-head{display:flex; align-items:baseline; gap:12px; margin-bottom:6px;}
+  .sec-head h2{font-size:24px; font-weight:800; margin:0; letter-spacing:-.01em;}
+  .sec-head .meta{font-size:13px; color:var(--mut);}
+  .sec-sub{color:var(--mut); margin:0 0 22px; font-size:15px;}
+
+  .grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:18px;}
+  .card{display:block; text-decoration:none; color:inherit; background:#fff;
+    border:1px solid var(--line2); border-radius:14px; padding:22px; transition:transform .12s, box-shadow .12s, border-color .12s;}
+  .card:hover{transform:translateY(-3px); border-color:var(--gold); box-shadow:0 8px 22px rgba(43,38,32,.08);}
+  .card.soon{opacity:.6; pointer-events:none;}
+  .card .num{font-size:12px; font-weight:700; color:var(--gold); letter-spacing:.1em;}
+  .card h3{font-size:18px; margin:8px 0 6px; font-weight:700;}
+  .card p{font-size:14px; color:var(--mut); margin:0 0 14px;}
+  .pill{display:inline-block; font-size:11px; font-weight:600; padding:3px 10px; border-radius:20px;}
+  .pill.live{background:#E1F5EE; color:var(--teal);}
+  .pill.soon{background:var(--cream2); color:var(--mut); border:1px solid var(--line2);}
+  .card .go{font-size:13px; font-weight:600; color:var(--charcoal); margin-top:10px; display:inline-block;}
+  .card .go::after{content:" →"; color:var(--gold);}
+
+  .about{background:var(--charcoal); color:#ece4d2; border-radius:16px; padding:34px; margin:30px 0;}
+  .about h2{color:#fff; font-size:22px; margin:0 0 10px;}
+  .about p{color:#d8cfbf; margin:0 0 14px; max-width:640px;}
+  .about a{color:var(--gold-soft); font-weight:600; text-decoration:none;}
+  .about a:hover{text-decoration:underline;}
+  .social{display:flex; gap:14px; flex-wrap:wrap; margin-top:6px;}
+  .social a{background:rgba(255,255,255,.08); color:#f3ecd9; padding:8px 14px; border-radius:9px;
+    font-size:13.5px; text-decoration:none; border:1px solid rgba(255,255,255,.1);}
+  .social a:hover{background:rgba(201,162,39,.22); border-color:var(--gold);}
+
+  footer{padding:40px 0 60px; text-align:center; color:var(--mut); font-size:13.5px; border-top:1px solid var(--line);}
+
+  @media (max-width:560px){
+    h1{font-size:36px;} .hero{padding:48px 0 30px;}
+    .top nav a:first-child{margin-left:0;}
+  }
+</style>
+</head>
+<body>
+
+<header class="top"><div class="wrap">
+  <div class="logo">Data<span>Mavericks</span></div>
+  <nav>
+    <a href="#lessons">Lessons</a>
+    <a href="#about">About</a>
+    <a href="https://instagram.com/datamavericks">Instagram</a>
+  </nav>
+</div></header>
+
+<div class="wrap">
+
+  <section class="hero">
+    <span class="eyebrow">Interactive AI Engineering</span>
+    <h1>Learn the architectures<br>behind <span class="accent">modern AI</span>.</h1>
+    <p>Deep learning, explained the way it should be — with real analogies, worked numbers, and live demos you can actually play with. One interactive page at a time.</p>
+    <div class="rule"></div>
+  </section>
+
+  <section id="lessons">
+    <div class="sec-head">
+      <h2>Chapter 3 · Deep Learning Architectures</h2>
+      <span class="meta">7 lessons</span>
+    </div>
+    <p class="sec-sub">From the humble perceptron to the doorstep of attention. Each lesson is fully interactive — drag, toggle, and watch the math respond.</p>
+
+    <div class="grid">
+
+      <a class="card" href="ffn.html">
+        <div class="num">3.1</div>
+        <h3>Feed Forward Networks</h3>
+        <p>The multilayer perceptron — the blueprint every other architecture is built on.</p>
+        <span class="pill live">● Live</span>
+        <div class="go">Open lesson</div>
+      </a>
+
+      <div class="card soon">
+        <div class="num">3.2</div>
+        <h3>Convolutional Networks</h3>
+        <p>How shared filters give a network the sense of space: conv, pooling, channels.</p>
+        <span class="pill soon">Coming soon</span>
+      </div>
+
+      <div class="card soon">
+        <div class="num">3.3</div>
+        <h3>Recurrent Networks</h3>
+        <p>Adding memory and sequence — the hidden state that carries the past forward.</p>
+        <span class="pill soon">Coming soon</span>
+      </div>
+
+      <div class="card soon">
+        <div class="num">3.4</div>
+        <h3>LSTM</h3>
+        <p>Gates and cell state — how networks learned to remember across long sequences.</p>
+        <span class="pill soon">Coming soon</span>
+      </div>
+
+      <div class="card soon">
+        <div class="num">3.5</div>
+        <h3>GRU</h3>
+        <p>A leaner gated cell — reset and update gates, and how it compares to LSTM.</p>
+        <span class="pill soon">Coming soon</span>
+      </div>
+
+      <div class="card soon">
+        <div class="num">3.6</div>
+        <h3>Limitations of RNNs</h3>
+        <p>Sequential compute and long-range decay — why recurrence hits a wall.</p>
+        <span class="pill soon">Coming soon</span>
+      </div>
+
+      <div class="card soon">
+        <div class="num">3.7</div>
+        <h3>The Need for Attention</h3>
+        <p>The fixed-context bottleneck — and the idea that set up the Transformer era.</p>
+        <span class="pill soon">Coming soon</span>
+      </div>
+
+    </div>
+  </section>
+
+  <section id="about">
+    <div class="about">
+      <h2>Why this exists</h2>
+      <p>I'm Venkata — a data and AI engineer documenting my own path deeper into AI engineering, and teaching what I learn along the way. These lessons are the notes I wish I'd had: rigorous, visual, and hands-on, with none of the hand-waving.</p>
+      <p>Built for the <a href="https://instagram.com/datamavericks">DataMavericks</a> community — 50K+ learners and counting.</p>
+      <div class="social">
+        <a href="https://instagram.com/datamavericks">Instagram</a>
+        <a href="https://github.com/">GitHub</a>
+        <a href="https://medium.com/">Medium</a>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="wrap">
+    DataMavericks · Interactive AI Engineering · Built and taught in public
+  </div>
+</footer>
+
+</body>
+</html>

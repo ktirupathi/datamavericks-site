@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3.5 GRU — Deep Learning Architectures</title>
+<style>
+  :root{
+    --cream:#F5F0E8; --cream2:#FBF7F0; --charcoal:#2B2620; --ink:#4a4030;
+    --gold:#C9A227; --gold-soft:#E8D9A8; --line:#E0D8C8; --line2:#D8CFC0;
+    --teal:#0F6E56; --coral:#993C1D; --blue:#185FA5; --mut:#6b6253;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{margin:0; background:var(--cream); color:var(--charcoal);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65; font-size:16px;}
+  .wrap{max-width:860px; margin:0 auto; padding:0 24px;}
+
+  .topnav{position:sticky; top:0; z-index:50; background:rgba(245,240,232,.92);
+    backdrop-filter:blur(8px); border-bottom:1px solid var(--line2);}
+  .topnav .wrap{display:flex; gap:6px; flex-wrap:wrap; align-items:center; padding-top:10px; padding-bottom:10px;}
+  .topnav a{font-size:12.5px; text-decoration:none; color:var(--ink);
+    padding:5px 11px; border-radius:20px; border:1px solid transparent; white-space:nowrap;}
+  .topnav a:hover{background:var(--cream2); border-color:var(--line2);}
+  .topnav a.brand{font-weight:700; color:var(--charcoal); padding-left:0; margin-right:6px;}
+  .topnav a.brand:hover{background:none; border-color:transparent;}
+
+  header.hero{padding:56px 0 34px;}
+  .eyebrow{display:inline-block; font-size:12px; letter-spacing:.16em; text-transform:uppercase;
+    color:var(--gold); font-weight:700; border:1px solid var(--gold-soft);
+    padding:5px 12px; border-radius:20px; background:var(--cream2);}
+  h1{font-size:40px; line-height:1.1; margin:20px 0 8px; font-weight:800; letter-spacing:-.02em;}
+  .sub{font-size:18px; color:var(--mut); max-width:640px;}
+  .rule{height:3px; width:88px; background:var(--gold); border-radius:2px; margin:26px 0 0;}
+
+  section{padding:34px 0; border-top:1px solid var(--line);}
+  .sec-no{font-size:13px; font-weight:700; color:var(--gold); letter-spacing:.12em; text-transform:uppercase;}
+  .sec-tag{font-size:13px; color:var(--mut); margin-left:8px;}
+  h2{font-size:27px; margin:8px 0 6px; font-weight:800; letter-spacing:-.01em;}
+  h3{font-size:18px; margin:26px 0 6px; font-weight:700; color:var(--ink);
+     border-bottom:1px solid var(--line); padding-bottom:5px;}
+  p{margin:12px 0;}
+  .lead{font-size:17px;}
+  em.k{font-style:normal; font-weight:700; color:var(--charcoal); background:var(--gold-soft); padding:0 4px; border-radius:3px;}
+
+  .box{border-radius:12px; padding:18px 20px; margin:18px 0; border:1px solid var(--line2);}
+  .box .lbl{font-size:11px; letter-spacing:.14em; text-transform:uppercase; font-weight:700; margin-bottom:6px;}
+  .analogy{background:var(--cream2); border-left:4px solid var(--gold); border-radius:0 12px 12px 0;}
+  .analogy .lbl{color:var(--gold);}
+  .formula{background:var(--charcoal); color:#f3ecd9; border:none; font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace;}
+  .formula .lbl{color:var(--gold-soft);}
+  .formula pre{margin:0; font-size:13.5px; line-height:1.7; white-space:pre-wrap; overflow-x:auto;}
+  .formula .note{color:#b8ab8a; font-size:12.5px; margin-top:10px; font-family:inherit;}
+  .worked{background:#fff; border:1px solid var(--line2);}
+  .worked .lbl{color:var(--teal);}
+  .worked pre{margin:0; font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace;
+    font-size:13px; line-height:1.75; white-space:pre-wrap; overflow-x:auto; color:#33302a;}
+  .worked .takeaway{margin-top:12px; padding-top:12px; border-top:1px dashed var(--line2);
+    font-size:14px; color:var(--ink);}
+  .flaw{background:#FAECE7; border-left:4px solid var(--coral); border-radius:0 12px 12px 0;}
+  .flaw .lbl{color:var(--coral);}
+  .win{background:#E6F1EC; border-left:4px solid var(--teal); border-radius:0 12px 12px 0;}
+  .win .lbl{color:var(--teal);}
+
+  blockquote{margin:22px 0; padding:4px 0 4px 22px; border-left:3px solid var(--gold);
+    font-size:19px; font-style:italic; color:var(--ink); line-height:1.5;}
+  blockquote cite{display:block; font-size:13px; font-style:normal; color:var(--mut); margin-top:8px;}
+
+  table{width:100%; border-collapse:collapse; margin:18px 0; font-size:14.5px;}
+  th{background:var(--charcoal); color:#fff; text-align:left; padding:10px 13px; font-weight:600;}
+  th:first-child{border-radius:8px 0 0 0;} th:last-child{border-radius:0 8px 0 0;}
+  td{border:1px solid var(--line2); padding:9px 13px; vertical-align:top;}
+  tr:nth-child(even) td{background:var(--cream2);}
+  td strong{color:var(--charcoal);}
+
+  .bottomline{background:var(--charcoal); color:#f3ecd9; border-radius:12px; padding:22px 24px; margin:22px 0 0;}
+  .bottomline .lbl{color:var(--gold); font-size:11px; letter-spacing:.14em; text-transform:uppercase; font-weight:700;}
+  .bottomline p{margin:8px 0 0; color:#ece4d2;}
+
+  /* compare cards */
+  .vs{display:grid; grid-template-columns:1fr 1fr; gap:14px; margin:18px 0;}
+  .vscard{background:#fff; border:1px solid var(--line2); border-radius:12px; padding:16px 18px;}
+  .vscard.lstm{border-top:3px solid var(--coral);}
+  .vscard.gru{border-top:3px solid var(--teal);}
+  .vscard h4{margin:0 0 8px; font-size:16px; font-weight:700;}
+  .vscard ul{margin:0; padding-left:18px; font-size:13.5px; color:var(--ink);}
+  .vscard li{margin-bottom:5px;}
+  .vscard .cnt{font-size:12px; color:var(--mut); font-weight:600; margin-top:8px;}
+
+  /* demo */
+  .demo{background:#fff; border:1px solid var(--line2); border-radius:14px; padding:22px; margin:20px 0;}
+  .seqpick{display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:14px;}
+  .seqpick .clabel{font-size:13px; color:var(--ink); font-weight:600; margin-right:4px;}
+  .seg button{font-size:12px; padding:7px 12px; border:1px solid var(--line2);
+    background:var(--cream2); border-radius:7px; cursor:pointer; color:var(--ink);}
+  .seg button.on{background:var(--gold); color:#fff; border-color:var(--gold); font-weight:600;}
+  .rowlabel{font-size:12px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; margin:6px 0 4px;}
+  .rowlabel.lstm{color:var(--coral);} .rowlabel.gru{color:var(--teal);}
+  .track-wrap{overflow-x:auto; padding-bottom:4px;}
+  svg{display:block;}
+  .calcbox{background:var(--cream2); border-radius:10px; padding:13px 14px; margin-top:12px;}
+  .calcbox .ct{font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--mut); font-weight:700;}
+  .calcbox .cmath{font-family:"SF Mono",monospace; font-size:12px; color:#33302a; margin-top:6px; line-height:1.6;}
+  .playbar{display:flex; gap:8px; align-items:center; margin-top:14px; flex-wrap:wrap;}
+  .playbar button{font-size:13px; padding:8px 14px; border:1px solid var(--line2); background:var(--charcoal);
+    color:#fff; border-radius:8px; cursor:pointer; font-weight:600;}
+  .playbar button.ghost{background:var(--cream2); color:var(--ink);}
+  .gapnote{font-size:12.5px; color:var(--mut); margin-top:10px;}
+  .legend{display:flex; gap:16px; flex-wrap:wrap; font-size:12px; color:var(--mut); margin-top:12px;}
+  .legend i{display:inline-block; width:12px; height:12px; border-radius:3px; vertical-align:-1px; margin-right:5px;}
+
+  footer{padding:40px 0 60px; border-top:1px solid var(--line); color:var(--mut); font-size:14px;}
+
+  @media (max-width:560px){h1{font-size:31px;} h2{font-size:23px;} .wrap{padding:0 16px;} .vs{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+
+<nav class="topnav"><div class="wrap">
+  <a href="#top" class="brand">Ch 3 · Deep Learning Architectures</a>
+  <a href="#intro">Intro</a>
+  <a href="#analogy">Analogy</a>
+  <a href="#how">How it works</a>
+  <a href="#math">The math</a>
+  <a href="#demo">Live demo</a>
+  <a href="#vs">LSTM vs GRU</a>
+  <a href="#props">Properties</a>
+  <a href="#bottom">Bottom line</a>
+</div></nav>
+
+<div class="wrap" id="top">
+
+<header class="hero" id="intro">
+  <span class="eyebrow">3.5 · Gated Recurrent Unit</span>
+  <h1>The Same Memory, Less Machinery</h1>
+  <p class="sub">A leaner gated cell that merges two of the LSTM's gates into one and drops the separate cell state — near-identical performance, fewer parameters, faster to train.</p>
+  <div class="rule"></div>
+</header>
+
+<section style="border-top:none; padding-top:8px;">
+  <p class="lead">In 3.4 the LSTM solved long-range memory beautifully — but at a cost: four neural layers per cell (three gates plus a candidate), a separate cell state <em>and</em> hidden state, and a lot of parameters to train. A natural question followed: is all that machinery necessary, or can we get the same protected-memory behavior more cheaply?</p>
+
+  <p>The <em class="k">Gated Recurrent Unit (GRU)</em>, introduced by Cho and colleagues in 2014, is the answer. It keeps the core insight of gating — letting the network choose what to keep and what to update — but streamlines it. Two LSTM gates (forget and input) are merged into a single <em class="k">update gate</em>, a new <em class="k">reset gate</em> controls how much past to use when forming new candidate memory, and the separate cell state is dropped entirely: the GRU carries everything in just the hidden state. The result is roughly 25% fewer parameters, faster training, and — on most tasks — performance statistically indistinguishable from the LSTM.</p>
+</section>
+
+<section id="analogy">
+  <span class="sec-no">01</span><span class="sec-tag">Building the intuition</span>
+  <h2>One dial instead of two switches</h2>
+  <div class="box analogy">
+    <div class="lbl">Analogy</div>
+    <p style="margin-top:0;">Back at the whiteboard from 3.4. The LSTM gave you two separate controls: one switch for "how much to erase" and another for "how much to write." But think about it — those two decisions are really two sides of one choice. If you're keeping the old note, you don't need the new one; if you're writing the new one, you're replacing the old. So why two switches?</p>
+    <p style="margin-bottom:0;">The GRU replaces them with a <strong>single dial</strong>: the update gate. Turn it toward "keep" and the old memory stays; turn it toward "update" and new information takes its place — but it's one motion, a smooth blend between old and new, not two independent valves. There's also a small second control, the <strong>reset gate</strong>, which decides how much of the old memory to even glance at when drafting the new note. Fewer controls, nearly the same result — like a photographer who gets the same shot with two dials that a rival needs four to manage.</p>
+  </div>
+</section>
+
+<section id="how">
+  <span class="sec-no">02</span><span class="sec-tag">Mechanics</span>
+  <h2>How the GRU works</h2>
+  <p>The GRU has two gates instead of three, and no separate cell state. The <em class="k">reset gate (r)</em> decides how much of the previous hidden state to use when computing a candidate new memory — turn it down and the cell "forgets" the past when drafting its proposal, useful for detecting the start of a new pattern. The <em class="k">update gate (z)</em> then performs the key blend: it interpolates between the old hidden state and the candidate, deciding the mix of remembered-versus-refreshed.</p>
+
+  <p>That interpolation is the elegant part. Where the LSTM wrote <code>C_t = f&middot;C_(t-1) + i&middot;C̃</code> with two independent gates, the GRU writes <code>h_t = (1-z)&middot;h_(t-1) + z&middot;h̃</code> — one gate <code>z</code> controlling both sides at once. When <code>z</code> is near 0, the old memory passes through almost untouched (the same additive, gradient-friendly highway the LSTM relied on). When <code>z</code> is near 1, the candidate takes over. One dial, both jobs.</p>
+
+  <h3 id="math">The math that matters</h3>
+  <div class="box formula">
+    <div class="lbl">Formula · one GRU step</div>
+<pre>Two gates (each a sigmoid over [previous hidden, new input]):
+   z_t = σ( W_z &middot; [h_(t-1), x_t] )    update gate
+   r_t = σ( W_r &middot; [h_(t-1), x_t] )    reset gate
+
+Candidate hidden state (reset gate filters the past):
+   h̃_t = tanh( W &middot; [ r_t * h_(t-1) ,  x_t ] )
+
+Blend old and new with ONE gate:
+   h_t = (1 - z_t) * h_(t-1)  +  z_t * h̃_t
+         └── keep old ──┘        └── take new ──┘
+
+No separate cell state. h_t carries everything.</pre>
+    <div class="note">Compare to the LSTM's six equations. The GRU has four, two gates instead of three, and one state instead of two. The (1-z)/z blend means a single number decides the keep-versus-update balance — that's the consolidation that buys the parameter savings while keeping the additive memory path intact.</div>
+  </div>
+</section>
+
+<section id="worked">
+  <span class="sec-no">03</span><span class="sec-tag">Numbers on paper</span>
+  <h2>Worked example — the update gate blends</h2>
+  <p>One GRU unit holds a memory. Watch how a single update gate <code>z</code> decides the balance between keeping the old value and adopting a new candidate.</p>
+
+  <div class="box worked">
+    <div class="lbl">Worked Example · keep vs update with one gate</div>
+<pre>Previous hidden state:  h_(t-1) = 0.80   (a stored fact)
+
+CASE 1 — nothing important happens (update gate stays low)
+   z = 0.10   (mostly keep)
+   h̃ = 0.30   (some candidate, but z gates it out)
+   h_t = (1 - 0.10)&times;0.80 + 0.10&times;0.30
+       = 0.90&times;0.80 + 0.10&times;0.30
+       = 0.720 + 0.030 = 0.750   ← memory nearly preserved
+
+CASE 2 — a strong new cue arrives (update gate opens)
+   z = 0.85   (mostly update)
+   h̃ = 0.95   (strong candidate)
+   h_t = (1 - 0.85)&times;0.80 + 0.85&times;0.95
+       = 0.15&times;0.80 + 0.85&times;0.95
+       = 0.120 + 0.8075 = 0.928   ← memory refreshed
+
+One gate z did the whole keep-vs-update decision —
+no second gate needed.</pre>
+    <div class="takeaway"><strong>Read the contrast:</strong> a low <code>z</code> keeps the past (0.75, close to the original 0.80); a high <code>z</code> swaps in the new value (0.93). The LSTM needed a forget gate <em>and</em> an input gate to express this. The GRU does it with one. See it run beside an LSTM live below.</p>
+  </div>
+</section>
+
+<section id="demo">
+  <span class="sec-no">04</span><span class="sec-tag">Interactive</span>
+  <h2>LSTM and GRU, side by side</h2>
+  <p>The same sequence runs through both architectures at once. The top track is an LSTM's cell-state memory; the bottom is a GRU's hidden state. A fact is stored at the ★ step, then must survive a run of irrelevant inputs. Step through and watch both lines hold the memory across the gap — the GRU keeping pace with the LSTM despite having one fewer gate and no separate cell state. The readout tracks how close they stay.</p>
+
+  <div class="demo">
+    <div class="seqpick">
+      <span class="clabel">Sequence:</span>
+      <div class="seg" id="seqSeg">
+        <button data-s="0" class="on">Short gap</button>
+        <button data-s="1">Long gap</button>
+      </div>
+    </div>
+
+    <div class="rowlabel lstm">LSTM · cell state (3 gates, separate memory)</div>
+    <div class="track-wrap"><svg id="lstmTrack" height="78" aria-label="LSTM memory track"></svg></div>
+
+    <div class="rowlabel gru">GRU · hidden state (2 gates, no separate memory)</div>
+    <div class="track-wrap"><svg id="gruTrack" height="98" aria-label="GRU memory track"></svg></div>
+
+    <div class="calcbox">
+      <div class="ct">GRU update this step</div>
+      <div class="cmath" id="calcMath">Press Step to begin.</div>
+    </div>
+
+    <div class="playbar">
+      <button id="stepBtn">Step ▸</button>
+      <button id="playBtn" class="ghost">Auto-play</button>
+      <button id="resetBtn" class="ghost">Reset</button>
+    </div>
+    <div class="gapnote" id="gapNote"></div>
+
+    <div class="legend">
+      <span><i style="background:#993C1D"></i>LSTM memory</span>
+      <span><i style="background:#0F6E56"></i>GRU memory</span>
+      <span><i style="background:#C9A227"></i>★ fact stored here</span>
+    </div>
+  </div>
+  <p style="font-size:14px; color:var(--mut);">The two lines track each other closely the whole way — both hold the stored fact across the gap and both refresh when the cue returns. That's the headline result: the GRU matches the LSTM's memory behavior with about 25% less machinery. On a small model that's a minor saving; across a deep stack trained on huge data, it's faster training and less memory for essentially the same accuracy.</p>
+</section>
+
+<section id="vs">
+  <span class="sec-no">05</span><span class="sec-tag">Choosing between them</span>
+  <h2>LSTM vs GRU — which, when</h2>
+
+  <div class="vs">
+    <div class="vscard lstm">
+      <h4>LSTM</h4>
+      <ul>
+        <li>3 gates: forget, input, output</li>
+        <li>Separate cell state + hidden state</li>
+        <li>More expressive control over memory</li>
+        <li>Often a slight edge on very long, complex sequences</li>
+      </ul>
+      <div class="cnt">~4 neural layers per cell · more parameters</div>
+    </div>
+    <div class="vscard gru">
+      <h4>GRU</h4>
+      <ul>
+        <li>2 gates: update, reset</li>
+        <li>Single hidden state, no separate memory</li>
+        <li>~25% fewer parameters, faster training</li>
+        <li>Often a better choice on smaller data or tight compute</li>
+      </ul>
+      <div class="cnt">~3 neural layers per cell · fewer parameters</div>
+    </div>
+  </div>
+
+  <div class="box win">
+    <div class="lbl">The honest answer</div>
+    <p style="margin-top:0;">There is no universal winner. Across years of benchmarks, the two perform comparably on most sequence tasks, and which one wins is usually dataset-dependent and small. The practical rule of thumb: <strong>start with a GRU</strong> when data or compute is limited and you want faster iteration, and reach for an <strong>LSTM</strong> when you have a large dataset and very long dependencies where its extra control might help. Often, you simply try both and keep whichever validates better.</p>
+    <p style="margin-bottom:0;">Both were enormously successful. Together they powered the golden age of sequence learning — neural machine translation, speech-to-text, and more — from roughly 2014 to 2018.</p>
+  </div>
+
+  <blockquote>
+    The GRU asked a sharp question: how much of the LSTM's complexity actually earns its keep? The answer — "less than you'd think" — gave the field a lighter tool that, for most jobs, works just as well.
+    <cite>On simplification as a design virtue</cite>
+  </blockquote>
+
+  <div class="box flaw">
+    <div class="lbl">The limitation neither one escapes</div>
+    <p style="margin-top:0;">For all their cleverness about memory, the GRU and the LSTM share the RNN family's defining constraint: they are <strong>sequential</strong>. Each step must finish before the next begins, because every hidden state depends on the one before it. Memory was solved; <em>speed and parallelism</em> were not.</p>
+    <p style="margin-bottom:0;">That is the wall the entire recurrent family hits — and <strong>3.6 Limitations of RNNs</strong> examines it directly: why sequential computation can't exploit modern parallel hardware, why long sequences stay slow no matter how clever the gating, and why these twin problems set the stage for attention to replace recurrence altogether.</p>
+  </div>
+</section>
+
+<section id="props">
+  <span class="sec-no">06</span><span class="sec-tag">At a glance</span>
+  <h2>Properties</h2>
+  <table>
+    <tr><th>Property</th><th>Value</th><th>Notes</th></tr>
+    <tr><td><strong>Gates</strong></td><td>2 (update, reset)</td><td>One fewer than the LSTM's three</td></tr>
+    <tr><td><strong>Update gate (z)</strong></td><td>Blends old/new</td><td>(1−z)·old + z·candidate — merges forget &amp; input</td></tr>
+    <tr><td><strong>Reset gate (r)</strong></td><td>Filters the past</td><td>How much history to use when drafting the candidate</td></tr>
+    <tr><td><strong>State</strong></td><td>Hidden only</td><td>No separate cell state — simpler than LSTM</td></tr>
+    <tr><td><strong>Parameters</strong></td><td>~25% fewer</td><td>Faster training, lighter footprint</td></tr>
+    <tr><td><strong>Performance</strong></td><td>≈ LSTM</td><td>Comparable on most tasks; winner is dataset-dependent</td></tr>
+    <tr><td><strong>Best use</strong></td><td>Limited data/compute</td><td>Good default when you want speed and simplicity</td></tr>
+    <tr><td><strong>Shared limit</strong></td><td>Still sequential</td><td>Can't parallelize across time — motivates attention</td></tr>
+  </table>
+</section>
+
+<section id="bottom" style="padding-bottom:10px;">
+  <div class="bottomline">
+    <div class="lbl">Bottom Line</div>
+    <p>The GRU is the LSTM trimmed down: two gates instead of three, one state instead of two, about a quarter fewer parameters — and, on most tasks, the same performance. Its update gate merges the LSTM's forget and input gates into a single keep-versus-refresh dial, while a reset gate controls how much past to use when drafting new memory. Pick a GRU for speed and smaller data, an LSTM for very long, complex sequences, or just try both. But both belong to the recurrent family, and both inherit its fatal constraint: they process one step at a time and cannot be parallelized. That limitation — not memory, but speed — is what the next lesson dissects, and what ultimately ended the reign of recurrence.</p>
+  </div>
+</section>
+
+<footer>
+  <p><strong>Next up — 3.6 Limitations of RNNs.</strong> Why sequential computation and long-range decay cap the entire recurrent family, no matter how clever the gating — and why the field needed a fundamentally different approach.</p>
+  <p style="font-size:13px;">Chapter 3 · Deep Learning Architectures &nbsp;·&nbsp; Lead AI Engineer curriculum &nbsp;·&nbsp; Track B</p>
+</footer>
+
+</div>
+
+<script>
+(function(){
+  var NS="http://www.w3.org/2000/svg";
+  // sequences: list of steps with a "store" flag; gates chosen to hold then refresh
+  var seqs=[
+    { label:"Short gap",
+      steps:[
+        {x:"Paris", store:true},
+        {x:"is"},
+        {x:"where"},
+        {x:"I"},
+        {x:"live", cue:true}
+      ]},
+    { label:"Long gap",
+      steps:[
+        {x:"Paris", store:true},
+        {x:"is"},{x:"a"},{x:"very"},{x:"old"},{x:"and"},{x:"lovely"},
+        {x:"city"},{x:"where"},{x:"I"},
+        {x:"live", cue:true}
+      ]}
+  ];
+  var sIdx=0, pos=-1, timer=null;
+
+  function el(t,a){var e=document.createElementNS(NS,t);for(var k in a)e.setAttribute(k,a[k]);return e;}
+
+  // simulate LSTM cell state and GRU hidden state on the same intent
+  function simulate(steps){
+    var lstm=[], gru=[];
+    var C=0, h=0;
+    for(var t=0;t<steps.length;t++){
+      var s=steps[t];
+      var f,i,cand, z,r,htil;
+      if(s.store){ f=0.10; i=0.95; cand=0.90; z=0.90; r=0.50; htil=0.90; }
+      else if(s.cue){ f=0.85; i=0.30; cand=0.70; z=0.45; r=0.60; htil=0.85; }
+      else { f=0.95; i=0.06; cand=0.30; z=0.08; r=0.40; htil=0.30; }
+      // LSTM cell update
+      C = Math.max(0,Math.min(1, f*C + i*cand));
+      lstm.push(C);
+      // GRU hidden update
+      var cand_h = Math.tanh( r*h + htil ); // crude candidate
+      cand_h = Math.max(0,Math.min(1, htil)); // keep comparable scale
+      h = (1-z)*h + z*cand_h;
+      h = Math.max(0,Math.min(1,h));
+      gru.push({h:h, z:z, r:r, htil:htil});
+    }
+    return {lstm:lstm, gru:gru};
+  }
+  function memColor(v, base){
+    var t=Math.max(0,Math.min(1,v));
+    var c0=[232,217,168], c1= base==="coral"?[153,60,29]:[15,110,86];
+    return "rgb("+Math.round(c0[0]+(c1[0]-c0[0])*t)+","+Math.round(c0[1]+(c1[1]-c0[1])*t)+","+Math.round(c0[2]+(c1[2]-c0[2])*t)+")";
+  }
+
+  var lsvg=document.getElementById("lstmTrack");
+  var gsvg=document.getElementById("gruTrack");
+
+  function drawTrack(svg, vals, steps, base, h){
+    var n=steps.length, cw=78, padL=14;
+    var W=padL+n*cw+14;
+    svg.setAttribute("width",W); svg.setAttribute("viewBox","0 0 "+W+" "+h);
+    svg.innerHTML="";
+    var by=14, bh=26;
+    for(var t=0;t<n;t++){
+      var cx=padL+t*cw, active=t<=pos, s=steps[t];
+      svg.appendChild(el("rect",{x:cx,y:by,width:cw-8,height:bh,rx:6,
+        fill: active?memColor(vals[t],base):"#FBF7F0",
+        stroke: s.store?"#C9A227":(base==="coral"?"#E0D8C8":"#E0D8C8"),"stroke-width": s.store?2.5:1}));
+      if(active){
+        var v=el("text",{x:cx+(cw-8)/2,y:by+bh/2+4,"text-anchor":"middle","font-size":"11",
+          "font-family":"monospace","font-weight":"700",fill: vals[t]>0.5?"#f3ecd9":"#33302a"});
+        v.textContent=vals[t].toFixed(2); svg.appendChild(v);
+      }
+      if(s.store){
+        var sb=el("text",{x:cx+(cw-8)/2,y:by-3,"text-anchor":"middle","font-size":"9","font-weight":"700",
+          "font-family":"sans-serif",fill:"#C9A227"}); sb.textContent="★ store"; svg.appendChild(sb);
+      }
+      // token (only on GRU track to save space)
+      if(h>80){
+        svg.appendChild(el("rect",{x:cx+(cw-8)/2-28,y:by+bh+8,width:56,height:24,rx:5,
+          fill: active?"#FBF7F0":"#F1ECE2", stroke: t===pos?"#2B2620":(active?"#C9A227":"#D8CFC0"),"stroke-width":t===pos?2:1}));
+        var xt=el("text",{x:cx+(cw-8)/2,y:by+bh+24,"text-anchor":"middle","font-size":"11",
+          "font-family":"sans-serif","font-weight":"600",fill:active?"#33302a":"#b3a995"});
+        xt.textContent=s.x; svg.appendChild(xt);
+      }
+    }
+  }
+
+  function draw(){
+    var steps=seqs[sIdx].steps, sim=simulate(steps);
+    var gruVals=sim.gru.map(function(g){return g.h;});
+    drawTrack(lsvg, sim.lstm, steps, "coral", 78);
+    drawTrack(gsvg, gruVals, steps, "teal", 98);
+
+    var cm=document.getElementById("calcMath");
+    if(pos<0){ cm.innerHTML="Press <b>Step</b> to feed the first token."; document.getElementById("gapNote").textContent=""; }
+    else{
+      var g=sim.gru[pos]; var prevH = pos===0?0:sim.gru[pos-1].h;
+      cm.innerHTML =
+        "h<sub>"+(pos+1)+"</sub> = (1 - z)&times;h<sub>prev</sub> + z&times;h̃<br>"+
+        "&nbsp;&nbsp; = (1 - "+g.z.toFixed(2)+")&times;"+prevH.toFixed(2)+" + "+g.z.toFixed(2)+"&times;"+g.htil.toFixed(2)+
+        " = <b>"+g.h.toFixed(2)+"</b>"+
+        (g.z<0.2?"<br><span style='color:#6b6253'>low z → old memory mostly kept</span>":
+         (g.z>0.7?"<br><span style='color:#0F6E56'>high z → memory refreshed with new info</span>":""));
+      // gap closeness
+      var diff=Math.abs(sim.lstm[pos]-sim.gru[pos].h);
+      document.getElementById("gapNote").innerHTML =
+        "LSTM = "+sim.lstm[pos].toFixed(2)+" &nbsp; GRU = "+sim.gru[pos].h.toFixed(2)+
+        " &nbsp; → difference "+diff.toFixed(2)+(diff<0.12?"  (tracking closely)":"");
+    }
+  }
+
+  function step(){ var n=seqs[sIdx].steps.length; pos++; if(pos>=n){pos=n-1; if(timer){clearInterval(timer);timer=null;document.getElementById("playBtn").textContent="Auto-play";}} draw(); }
+  function reset(){ pos=-1; draw(); }
+
+  document.getElementById("stepBtn").addEventListener("click",function(){
+    if(timer){clearInterval(timer);timer=null;document.getElementById("playBtn").textContent="Auto-play";}
+    if(pos<seqs[sIdx].steps.length-1) step();
+  });
+  document.getElementById("resetBtn").addEventListener("click",function(){
+    if(timer){clearInterval(timer);timer=null;document.getElementById("playBtn").textContent="Auto-play";}
+    reset();
+  });
+  document.getElementById("playBtn").addEventListener("click",function(){
+    var b=this;
+    if(timer){clearInterval(timer);timer=null;b.textContent="Auto-play";}
+    else{ if(pos>=seqs[sIdx].steps.length-1) reset(); b.textContent="Pause"; timer=setInterval(step,750); }
+  });
+  var seg=document.getElementById("seqSeg");
+  seg.querySelectorAll("button").forEach(function(btn){
+    btn.addEventListener("click",function(){
+      seg.querySelectorAll("button").forEach(function(x){x.classList.remove("on");});
+      btn.classList.add("on"); sIdx=parseInt(btn.getAttribute("data-s"));
+      if(timer){clearInterval(timer);timer=null;document.getElementById("playBtn").textContent="Auto-play";}
+      reset();
+    });
+  });
+
+  draw();
+})();
+</script>
+
+</body>
+</html>

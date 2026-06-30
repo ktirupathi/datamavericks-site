@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3.2 Convolutional Neural Networks — Deep Learning Architectures</title>
+<style>
+  :root{
+    --cream:#F5F0E8; --cream2:#FBF7F0; --charcoal:#2B2620; --ink:#4a4030;
+    --gold:#C9A227; --gold-soft:#E8D9A8; --line:#E0D8C8; --line2:#D8CFC0;
+    --teal:#0F6E56; --coral:#993C1D; --blue:#185FA5; --mut:#6b6253;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{margin:0; background:var(--cream); color:var(--charcoal);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65; font-size:16px;}
+  .wrap{max-width:860px; margin:0 auto; padding:0 24px;}
+
+  .topnav{position:sticky; top:0; z-index:50; background:rgba(245,240,232,.92);
+    backdrop-filter:blur(8px); border-bottom:1px solid var(--line2);}
+  .topnav .wrap{display:flex; gap:6px; flex-wrap:wrap; align-items:center; padding-top:10px; padding-bottom:10px;}
+  .topnav a{font-size:12.5px; text-decoration:none; color:var(--ink);
+    padding:5px 11px; border-radius:20px; border:1px solid transparent; white-space:nowrap;}
+  .topnav a:hover{background:var(--cream2); border-color:var(--line2);}
+  .topnav a.brand{font-weight:700; color:var(--charcoal); padding-left:0; margin-right:6px;}
+  .topnav a.brand:hover{background:none; border-color:transparent;}
+
+  header.hero{padding:56px 0 34px;}
+  .eyebrow{display:inline-block; font-size:12px; letter-spacing:.16em; text-transform:uppercase;
+    color:var(--gold); font-weight:700; border:1px solid var(--gold-soft);
+    padding:5px 12px; border-radius:20px; background:var(--cream2);}
+  h1{font-size:40px; line-height:1.1; margin:20px 0 8px; font-weight:800; letter-spacing:-.02em;}
+  .sub{font-size:18px; color:var(--mut); max-width:640px;}
+  .rule{height:3px; width:88px; background:var(--gold); border-radius:2px; margin:26px 0 0;}
+
+  section{padding:34px 0; border-top:1px solid var(--line);}
+  .sec-no{font-size:13px; font-weight:700; color:var(--gold); letter-spacing:.12em; text-transform:uppercase;}
+  .sec-tag{font-size:13px; color:var(--mut); margin-left:8px;}
+  h2{font-size:27px; margin:8px 0 6px; font-weight:800; letter-spacing:-.01em;}
+  h3{font-size:18px; margin:26px 0 6px; font-weight:700; color:var(--ink);
+     border-bottom:1px solid var(--line); padding-bottom:5px;}
+  p{margin:12px 0;}
+  .lead{font-size:17px;}
+  em.k{font-style:normal; font-weight:700; color:var(--charcoal); background:var(--gold-soft); padding:0 4px; border-radius:3px;}
+
+  .box{border-radius:12px; padding:18px 20px; margin:18px 0; border:1px solid var(--line2);}
+  .box .lbl{font-size:11px; letter-spacing:.14em; text-transform:uppercase; font-weight:700; margin-bottom:6px;}
+  .analogy{background:var(--cream2); border-left:4px solid var(--gold); border-radius:0 12px 12px 0;}
+  .analogy .lbl{color:var(--gold);}
+  .formula{background:var(--charcoal); color:#f3ecd9; border:none; font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace;}
+  .formula .lbl{color:var(--gold-soft);}
+  .formula pre{margin:0; font-size:14px; line-height:1.7; white-space:pre-wrap; overflow-x:auto;}
+  .formula .note{color:#b8ab8a; font-size:12.5px; margin-top:10px; font-family:inherit;}
+  .worked{background:#fff; border:1px solid var(--line2);}
+  .worked .lbl{color:var(--teal);}
+  .worked pre{margin:0; font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace;
+    font-size:13px; line-height:1.75; white-space:pre-wrap; overflow-x:auto; color:#33302a;}
+  .worked .takeaway{margin-top:12px; padding-top:12px; border-top:1px dashed var(--line2);
+    font-size:14px; color:var(--ink);}
+  .flaw{background:#FAECE7; border-left:4px solid var(--coral); border-radius:0 12px 12px 0;}
+  .flaw .lbl{color:var(--coral);}
+
+  blockquote{margin:22px 0; padding:4px 0 4px 22px; border-left:3px solid var(--gold);
+    font-size:19px; font-style:italic; color:var(--ink); line-height:1.5;}
+  blockquote cite{display:block; font-size:13px; font-style:normal; color:var(--mut); margin-top:8px;}
+
+  table{width:100%; border-collapse:collapse; margin:18px 0; font-size:14.5px;}
+  th{background:var(--charcoal); color:#fff; text-align:left; padding:10px 13px; font-weight:600;}
+  th:first-child{border-radius:8px 0 0 0;} th:last-child{border-radius:0 8px 0 0;}
+  td{border:1px solid var(--line2); padding:9px 13px; vertical-align:top;}
+  tr:nth-child(even) td{background:var(--cream2);}
+  td strong{color:var(--charcoal);}
+
+  .bottomline{background:var(--charcoal); color:#f3ecd9; border-radius:12px; padding:22px 24px; margin:22px 0 0;}
+  .bottomline .lbl{color:var(--gold); font-size:11px; letter-spacing:.14em; text-transform:uppercase; font-weight:700;}
+  .bottomline p{margin:8px 0 0; color:#ece4d2;}
+
+  /* demo */
+  .demo{background:#fff; border:1px solid var(--line2); border-radius:14px; padding:22px; margin:20px 0;}
+  .demo h4{margin:0 0 4px; font-size:16px; font-weight:700;}
+  .demo .hint{font-size:13px; color:var(--mut); margin:0 0 16px;}
+  .conv-stage{display:flex; flex-wrap:wrap; gap:26px; align-items:flex-start; justify-content:space-between;}
+  .grid-block{flex:0 0 auto;}
+  .grid-cap{font-size:12px; letter-spacing:.06em; text-transform:uppercase; color:var(--mut); font-weight:700; margin-bottom:8px; text-align:center;}
+  svg{display:block;}
+  .controls2{flex:1 1 200px; min-width:200px;}
+  .ctrl{margin-bottom:16px;}
+  .ctrl .clabel{font-size:13px; color:var(--ink); font-weight:600; margin-bottom:7px;}
+  .seg{display:flex; gap:6px; flex-wrap:wrap;}
+  .seg button{flex:1; font-size:12px; padding:7px 6px; border:1px solid var(--line2);
+    background:var(--cream2); border-radius:7px; cursor:pointer; color:var(--ink); min-width:58px;}
+  .seg button.on{background:var(--gold); color:#fff; border-color:var(--gold); font-weight:600;}
+  .calcbox{background:var(--cream2); border-radius:10px; padding:13px 14px; margin-top:6px;}
+  .calcbox .ct{font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--mut); font-weight:700;}
+  .calcbox .cmath{font-family:"SF Mono",monospace; font-size:12.5px; color:#33302a; margin-top:6px; line-height:1.5; word-spacing:-1px;}
+  .calcbox .cres{font-size:13px; margin-top:8px; padding-top:8px; border-top:1px dashed var(--line2);}
+  .calcbox .cres b{font-size:18px; color:var(--charcoal); font-variant-numeric:tabular-nums;}
+  .playbar{display:flex; gap:8px; align-items:center; margin-top:10px;}
+  .playbar button{font-size:13px; padding:8px 14px; border:1px solid var(--line2); background:var(--charcoal);
+    color:#fff; border-radius:8px; cursor:pointer; font-weight:600;}
+  .playbar button.ghost{background:var(--cream2); color:var(--ink);}
+  .legend{display:flex; gap:16px; flex-wrap:wrap; font-size:12px; color:var(--mut); margin-top:14px;}
+  .legend i{display:inline-block; width:12px; height:12px; border-radius:3px; vertical-align:-1px; margin-right:5px;}
+
+  footer{padding:40px 0 60px; border-top:1px solid var(--line); color:var(--mut); font-size:14px;}
+
+  @media (max-width:560px){h1{font-size:31px;} h2{font-size:23px;} .wrap{padding:0 16px;}
+    .conv-stage{gap:18px;}}
+</style>
+</head>
+<body>
+
+<nav class="topnav"><div class="wrap">
+  <a href="#top" class="brand">Ch 3 · Deep Learning Architectures</a>
+  <a href="#intro">Intro</a>
+  <a href="#analogy">Analogy</a>
+  <a href="#how">How it works</a>
+  <a href="#math">The math</a>
+  <a href="#demo">Live demo</a>
+  <a href="#pool">Pooling</a>
+  <a href="#channels">Channels</a>
+  <a href="#props">Properties</a>
+  <a href="#bottom">Bottom line</a>
+</div></nav>
+
+<div class="wrap" id="top">
+
+<header class="hero" id="intro">
+  <span class="eyebrow">3.2 · Convolutional Neural Networks</span>
+  <h1>Giving the Network Eyes</h1>
+  <p class="sub">The architecture that learned to see. Shared filters slide across an image, detecting patterns wherever they appear — the spatial sense an MLP completely lacks.</p>
+  <div class="rule"></div>
+</header>
+
+<section style="border-top:none; padding-top:8px;">
+  <p class="lead">In 3.1 we ended on a limitation: a plain MLP treats an image as a flat, unordered list of pixels. It has <em class="k">no notion of space</em> — a pixel's neighbors mean nothing to it, and a cat in the top-left is, to the network, a completely different input than the same cat in the bottom-right. Feed it a modest 200&times;200 image and every first-layer neuron needs 40,000 weights. Wasteful, and blind to structure.</p>
+
+  <p>The <em class="k">Convolutional Neural Network (CNN)</em> fixes exactly this. Instead of connecting every pixel to every neuron, it slides a small set of shared weights — a <em class="k">filter</em> (or kernel) — across the image, computing a little weighted sum at each position. The same filter is reused everywhere, so a pattern it learns to detect (an edge, a curve, a texture) is found <em>wherever it appears</em>. This single idea — local connections plus shared weights — is what gave us AlexNet in 2012 and launched the modern era of computer vision.</p>
+</section>
+
+<section id="analogy">
+  <span class="sec-no">01</span><span class="sec-tag">Building the intuition</span>
+  <h2>A flashlight sweeping a dark mural</h2>
+  <div class="box analogy">
+    <div class="lbl">Analogy</div>
+    <p style="margin-top:0;">Imagine a huge mural in a dark room, and you have a small flashlight that lights up only a 3&times;3 patch at a time. You sweep it methodically left to right, top to bottom. At every position you ask one fixed question — say, <em>"is there a vertical edge here?"</em> — and jot down a single number for how strongly the answer is yes. When you're done sweeping, your page of numbers is a <strong>map of where vertical edges live</strong> in the mural.</p>
+    <p style="margin-bottom:0;">That flashlight is the filter. The fixed question it asks is the filter's learned weights. The page of jotted numbers is the <strong>feature map</strong>. And because you asked the <em>same</em> question at every position, you'd spot a vertical edge whether it sat in the corner or dead center — that is translation invariance, the property the MLP never had. Swap in a second flashlight asking "is there a curve here?" and you get a second feature map. Stack enough of these and the network sees edges, then shapes, then objects.</p>
+  </div>
+</section>
+
+<section id="how">
+  <span class="sec-no">02</span><span class="sec-tag">Mechanics</span>
+  <h2>How convolution works</h2>
+  <p>A convolution layer has three moving ideas. First, the <em class="k">filter</em>: a small grid of weights, typically 3&times;3 or 5&times;5. Second, the <em class="k">sliding</em>: the filter steps across the input one position at a time, and at each stop it does an element-wise multiply with the patch underneath, then sums the results into one output number. Third, <em class="k">shared weights</em>: it's the <em>same</em> filter at every position, so the layer needs only nine weights (for a 3&times;3) instead of one weight per pixel.</p>
+
+  <p>The grid of output numbers the filter produces as it sweeps is the <em class="k">feature map</em> — literally a map of where that filter's pattern was found. A few terms you'll meet: <strong>stride</strong> is how far the filter jumps each step (stride 1 = every position, stride 2 = skip every other, shrinking the output). <strong>Padding</strong> adds a border of zeros so the filter can reach the edges and the output stays the same size. And <strong>channels</strong> are the depth dimension — more on those below.</p>
+
+  <h3 id="math">The math that matters</h3>
+  <div class="box formula">
+    <div class="lbl">Formula · 2D convolution at one position</div>
+<pre>For an output position (i, j), with a K&times;K filter w over input X:
+
+   out(i,j) = ╲╲  X(i+m, j+n) &middot; w(m,n)   + b
+              ╱╱
+            m,n = 0 .. K-1
+
+In words: line the filter up over the patch, multiply
+each overlapping pair, add them all up, add the bias.
+
+Output size (one dimension):
+   out = (N - K + 2P) / S  +  1
+   N=input size, K=filter, P=padding, S=stride</pre>
+    <div class="note">That second formula is worth memorizing — it tells you exactly how big a feature map will be. A 5&times;5 input with a 3&times;3 filter, no padding, stride 1, gives (5-3)/1 + 1 = 3, a 3&times;3 output. You'll watch this happen live below.</div>
+  </div>
+</section>
+
+<section id="worked">
+  <span class="sec-no">03</span><span class="sec-tag">Numbers on paper</span>
+  <h2>Worked example — a vertical-edge filter</h2>
+  <p>Here is one convolution step. A 3&times;3 patch of an image meets a classic vertical-edge filter (bright on the left, dark on the right). Wherever the image goes from bright to dark horizontally, this filter fires strongly.</p>
+
+  <div class="box worked">
+    <div class="lbl">Worked Example · one output value</div>
+<pre>Image patch:          Filter (vertical edge):
+  [ 90  20  10 ]         [ +1   0  -1 ]
+  [ 95  25  15 ]         [ +1   0  -1 ]
+  [ 88  18  12 ]         [ +1   0  -1 ]
+
+Element-wise multiply, then sum:
+   (90&times;1) + (20&times;0) + (10&times;-1)
+ + (95&times;1) + (25&times;0) + (15&times;-1)
+ + (88&times;1) + (18&times;0) + (12&times;-1)
+
+ = (90 - 10) + (95 - 15) + (88 - 12)
+ = 80 + 80 + 76
+ = 236        →  large positive: strong edge here
+
+Same filter on a flat patch [50 50 50 / ...]:
+ = (50-50)+(50-50)+(50-50) = 0   →  no edge</pre>
+    <div class="takeaway"><strong>Read the result:</strong> the filter outputs a big number (236) where the image is bright-on-left, dark-on-right — exactly a vertical edge — and zero on flat regions. Slide this one filter across the whole image and the feature map lights up along every vertical edge. Try it live below.</div>
+  </div>
+</section>
+
+<section id="demo">
+  <span class="sec-no">04</span><span class="sec-tag">Interactive</span>
+  <h2>Slide the filter yourself</h2>
+  <p>The 5&times;5 grid on the left is a tiny image (a bright region meeting a dark one). The 3&times;3 filter sweeps across it; the highlighted patch shows where it sits right now. On the right, the feature map fills in one cell at a time as the filter moves. Watch the calculation update live, switch filters to see different patterns emerge, and notice the output is 3&times;3 — exactly what the size formula predicted.</p>
+
+  <div class="demo">
+    <div class="conv-stage">
+      <div class="grid-block">
+        <div class="grid-cap">Input image · 5&times;5</div>
+        <svg id="inputGrid" width="210" height="210" viewBox="0 0 210 210" aria-label="Input image grid with sliding filter"></svg>
+      </div>
+
+      <div class="grid-block">
+        <div class="grid-cap">Feature map · 3&times;3</div>
+        <svg id="outputGrid" width="130" height="130" viewBox="0 0 130 130" aria-label="Output feature map"></svg>
+        <div class="legend">
+          <span><i style="background:#2B2620"></i>High value</span>
+          <span><i style="background:#E8D9A8"></i>Low / zero</span>
+        </div>
+      </div>
+
+      <div class="controls2">
+        <div class="ctrl">
+          <div class="clabel">Filter</div>
+          <div class="seg" id="filtSeg">
+            <button data-f="vedge" class="on">Vert. edge</button>
+            <button data-f="hedge">Horiz. edge</button>
+            <button data-f="blur">Blur</button>
+          </div>
+        </div>
+        <div class="calcbox">
+          <div class="ct">Current position calc</div>
+          <div class="cmath" id="calcMath">—</div>
+          <div class="cres">Output = <b id="calcRes">—</b></div>
+        </div>
+        <div class="playbar">
+          <button id="stepBtn">Step ▸</button>
+          <button id="playBtn" class="ghost">Auto-play</button>
+          <button id="resetBtn" class="ghost">Reset</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <p style="font-size:14px; color:var(--mut);">Notice three things: the same nine filter weights are reused at every position (that's weight sharing — the whole reason a CNN is efficient). The vertical-edge filter lights up the feature map down the middle, where bright meets dark, and stays near zero on the flat regions. And switching to the blur filter produces a totally different map from the identical image — the filter <em>is</em> the question being asked.</p>
+</section>
+
+<section id="pool">
+  <span class="sec-no">05</span><span class="sec-tag">Shrinking smartly</span>
+  <h2>Pooling — keeping the signal, dropping the bulk</h2>
+  <p>After convolution, feature maps are still large. <em class="k">Pooling</em> shrinks them while keeping the strongest signals. The common form, <strong>max pooling</strong>, slides a small window (usually 2&times;2) across the feature map and keeps only the maximum value in each window — discarding three of every four numbers. A 2&times;2 max-pool halves the width and height, cutting the data to a quarter.</p>
+
+  <div class="box worked">
+    <div class="lbl">Worked Example · 2&times;2 max pooling</div>
+<pre>Feature map region:        After 2&times;2 max pool (stride 2):
+  [ 236  12 | 40   8 ]
+  [  18  90 | 30  22 ]          [ 236   40 ]
+  ----------+--------          [ 110  205 ]
+  [ 110  45 | 18 205 ]
+  [  60  33 | 90  12 ]
+
+Each 2&times;2 block → its single largest value.
+  Top-left block: max(236,12,18,90)   = 236
+  Top-right block: max(40,8,30,22)     = 40
+  ...and so on.</pre>
+    <div class="takeaway"><strong>Why it helps:</strong> pooling keeps the <em>strongest evidence</em> that a feature was present, throws away precise position (giving a little translation tolerance), shrinks compute dramatically, and widens the area each later neuron effectively "sees." Cheaper and more robust, in one step.</div>
+  </div>
+</section>
+
+<section id="channels">
+  <span class="sec-no">06</span><span class="sec-tag">The depth dimension</span>
+  <h2>Filters and channels — stacking up</h2>
+  <p>Two more pieces complete the picture. <strong>Channels</strong> are the depth of the data. A color image isn't one grid, it's three stacked grids — red, green, blue. So a filter on a color image isn't 3&times;3, it's 3&times;3&times;3: it spans all three channels at once and sums across them into a single output number. The input depth always matches the filter depth.</p>
+
+  <p>And a single convolution layer doesn't learn just one filter — it learns <em class="k">many</em>, often 32, 64, or hundreds. Each produces its own feature map, and those maps stack into the output's channels. So a layer might take a 3-channel image and emit a 64-channel result: 64 different learned questions, each answered across the whole image. The next layer's filters then span all 64 of those channels, combining simple features into complex ones. This is the same <strong>feature hierarchy</strong> from 3.1 — early layers find edges, middle layers find shapes and textures, deep layers find whole objects — now built spatially.</p>
+
+  <blockquote>
+    A convolutional network doesn't memorize where things are. It learns <em>what</em> to look for, then looks everywhere at once. That is the whole trick — and why a few thousand shared weights can outperform millions of independent ones.
+    <cite>On why weight sharing changed computer vision</cite>
+  </blockquote>
+
+  <div class="box flaw">
+    <div class="lbl">Where CNNs reach their limit</div>
+    <p style="margin-top:0;">CNNs are masters of <strong>spatial</strong> structure — grids of pixels, where nearby things relate. But much of the world is <strong>sequential</strong>: language, audio, time series, where meaning depends on order and on what came earlier. A CNN's fixed, local window has no memory of a sequence and no natural way to handle inputs of varying length.</p>
+    <p style="margin-bottom:0;">That gap is what <strong>3.3 Recurrent Neural Networks</strong> sets out to fill — adding a hidden state that carries information forward through a sequence, one step at a time. The MLP gained space here in 3.2; next it gains memory.</p>
+  </div>
+</section>
+
+<section id="props">
+  <span class="sec-no">07</span><span class="sec-tag">At a glance</span>
+  <h2>Properties</h2>
+  <table>
+    <tr><th>Property</th><th>Value</th><th>Notes</th></tr>
+    <tr><td><strong>Core operation</strong></td><td>Convolution</td><td>Slide a shared filter, multiply-and-sum each patch</td></tr>
+    <tr><td><strong>Key idea</strong></td><td>Local + shared weights</td><td>Few weights, reused everywhere — efficient and translation-aware</td></tr>
+    <tr><td><strong>Output</strong></td><td>Feature maps</td><td>One map per filter, marking where its pattern appears</td></tr>
+    <tr><td><strong>Downsampling</strong></td><td>Pooling</td><td>Max pooling keeps strongest signal, shrinks data, adds robustness</td></tr>
+    <tr><td><strong>Depth</strong></td><td>Channels</td><td>Input channels match filter depth; many filters stack into output channels</td></tr>
+    <tr><td><strong>Strength</strong></td><td>Spatial structure</td><td>Images, video frames, anything on a grid</td></tr>
+    <tr><td><strong>Blind spot</strong></td><td>Sequence &amp; order</td><td>No memory of time or order — motivates RNNs</td></tr>
+    <tr><td><strong>Best use</strong></td><td>Vision tasks</td><td>Classification, detection, segmentation; still strong in 2026</td></tr>
+  </table>
+</section>
+
+<section id="bottom" style="padding-bottom:10px;">
+  <div class="bottomline">
+    <div class="lbl">Bottom Line</div>
+    <p>A CNN gives a network the sense of space the MLP lacked. By sliding small shared filters across an image, it detects patterns wherever they appear, using a tiny fraction of the weights a fully-connected layer would need. Convolution finds features, pooling shrinks and stabilizes them, and stacking many filters across channels builds a hierarchy from edges to objects. CNNs still dominate vision in 2026 — but they see only space, not sequence. For language, audio, and time, the network needs memory, and that is where recurrent architectures come in next.</p>
+  </div>
+</section>
+
+<footer>
+  <p><strong>Next up — 3.3 Recurrent Neural Networks.</strong> Adding memory and order through a hidden state that carries the past forward, in the same interactive format.</p>
+  <p style="font-size:13px;">Chapter 3 · Deep Learning Architectures &nbsp;·&nbsp; Lead AI Engineer curriculum &nbsp;·&nbsp; Track B</p>
+</footer>
+
+</div>
+
+<script>
+(function(){
+  var NS="http://www.w3.org/2000/svg";
+  // 5x5 input: bright left, dark right (a vertical edge down the middle)
+  var img=[
+    [90,88,40,12,10],
+    [92,90,42,14,11],
+    [95,93,45,15,12],
+    [91,89,41,13,10],
+    [93,91,43,14,11]
+  ];
+  var filters={
+    vedge:[[1,0,-1],[1,0,-1],[1,0,-1]],
+    hedge:[[1,1,1],[0,0,0],[-1,-1,-1]],
+    blur:[[1/9,1/9,1/9],[1/9,1/9,1/9],[1/9,1/9,1/9]]
+  };
+  var curF="vedge";
+  var pos=0; // 0..8, position in 3x3 output (row-major)
+  var timer=null;
+
+  function el(t,a){var e=document.createElementNS(NS,t);for(var k in a)e.setAttribute(k,a[k]);return e;}
+
+  // compute full 3x3 output for current filter
+  function computeAll(){
+    var f=filters[curF], out=[];
+    for(var oi=0;oi<3;oi++){out[oi]=[];for(var oj=0;oj<3;oj++){
+      var s=0;
+      for(var m=0;m<3;m++)for(var n=0;n<3;n++) s+=img[oi+m][oj+n]*f[m][n];
+      out[oi][oj]=s;
+    }}
+    return out;
+  }
+  function outRange(out){
+    var mn=Infinity,mx=-Infinity;
+    for(var i=0;i<3;i++)for(var j=0;j<3;j++){mn=Math.min(mn,out[i][j]);mx=Math.max(mx,out[i][j]);}
+    return {mn:mn,mx:mx};
+  }
+  function shade(v,mn,mx){ // map value -> cream..charcoal
+    var t = mx===mn?0:(v-mn)/(mx-mn); t=Math.max(0,Math.min(1,t));
+    var c0=[232,217,168], c1=[43,38,32];
+    return "rgb("+Math.round(c0[0]+(c1[0]-c0[0])*t)+","+Math.round(c0[1]+(c1[1]-c0[1])*t)+","+Math.round(c0[2]+(c1[2]-c0[2])*t)+")";
+  }
+  function imgShade(v){var t=v/100;return "rgb("+Math.round(245-(245-60)*t)+","+Math.round(240-(240-55)*t)+","+Math.round(232-(232-50)*t)+")";}
+
+  var inSvg=document.getElementById("inputGrid");
+  var outSvg=document.getElementById("outputGrid");
+
+  function draw(){
+    var out=computeAll(), rg=outRange(out);
+    var oi=Math.floor(pos/3), oj=pos%3;
+
+    // ---- input grid ----
+    inSvg.innerHTML="";
+    var cell=40, pad=5;
+    for(var i=0;i<5;i++)for(var j=0;j<5;j++){
+      var x=pad+j*cell, y=pad+i*cell;
+      inSvg.appendChild(el("rect",{x:x,y:y,width:cell-2,height:cell-2,rx:4,
+        fill:imgShade(img[i][j]),stroke:"#D8CFC0","stroke-width":1}));
+      var tcol=img[i][j]>55?"#f3ecd9":"#33302a";
+      var t=el("text",{x:x+(cell-2)/2,y:y+(cell-2)/2+4,"text-anchor":"middle",
+        "font-size":"12","font-family":"monospace","font-weight":"600",fill:tcol});
+      t.textContent=img[i][j];
+      inSvg.appendChild(t);
+    }
+    // filter highlight (3x3 starting at oi,oj)
+    inSvg.appendChild(el("rect",{x:pad+oj*cell-2,y:pad+oi*cell-2,
+      width:cell*3,height:cell*3,rx:6,fill:"rgba(201,162,39,0.16)",
+      stroke:"#C9A227","stroke-width":3}));
+
+    // ---- output grid ----
+    outSvg.innerHTML="";
+    var oc=40, op=5;
+    for(var r=0;r<3;r++)for(var c=0;c<3;c++){
+      var filled = (r*3+c) <= pos;
+      var x=op+c*oc, y=op+r*oc;
+      outSvg.appendChild(el("rect",{x:x,y:y,width:oc-2,height:oc-2,rx:4,
+        fill: filled?shade(out[r][c],rg.mn,rg.mx):"#FBF7F0",
+        stroke: (r===oi&&c===oj)?"#C9A227":"#D8CFC0","stroke-width":(r===oi&&c===oj)?3:1}));
+      if(filled){
+        var val=Math.round(out[r][c]);
+        var norm=rg.mx===rg.mn?0:(out[r][c]-rg.mn)/(rg.mx-rg.mn);
+        var tc=norm>0.55?"#f3ecd9":"#33302a";
+        var t2=el("text",{x:x+(oc-2)/2,y:y+(oc-2)/2+4,"text-anchor":"middle",
+          "font-size":"11","font-family":"monospace","font-weight":"600",fill:tc});
+        t2.textContent=val;
+        outSvg.appendChild(t2);
+      }
+    }
+
+    // ---- calc box ----
+    var f=filters[curF];
+    var terms=[];
+    for(var m=0;m<3;m++)for(var n=0;n<3;n++){
+      var w=f[m][n];
+      if(curF==="blur"){ terms.push(img[oi+m][oj+n]+"&times;⅑"); }
+      else if(w!==0){ terms.push(img[oi+m][oj+n]+"&times;"+(w>0?"+"+w:w)); }
+    }
+    document.getElementById("calcMath").innerHTML = terms.join("  ");
+    document.getElementById("calcRes").textContent = Math.round(out[oi][oj]);
+  }
+
+  function step(){ pos=(pos+1)%9; draw(); }
+  function reset(){ pos=0; draw(); }
+
+  document.getElementById("stepBtn").addEventListener("click",function(){
+    if(timer){clearInterval(timer);timer=null;document.getElementById("playBtn").textContent="Auto-play";}
+    step();
+  });
+  document.getElementById("resetBtn").addEventListener("click",function(){
+    if(timer){clearInterval(timer);timer=null;document.getElementById("playBtn").textContent="Auto-play";}
+    reset();
+  });
+  document.getElementById("playBtn").addEventListener("click",function(){
+    var b=this;
+    if(timer){clearInterval(timer);timer=null;b.textContent="Auto-play";}
+    else{b.textContent="Pause";timer=setInterval(step,750);}
+  });
+  var seg=document.getElementById("filtSeg");
+  seg.querySelectorAll("button").forEach(function(btn){
+    btn.addEventListener("click",function(){
+      seg.querySelectorAll("button").forEach(function(b){b.classList.remove("on");});
+      btn.classList.add("on"); curF=btn.getAttribute("data-f"); pos=0; draw();
+    });
+  });
+
+  draw();
+})();
+</script>
+
+</body>
+</html>

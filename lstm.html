@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3.4 LSTM — Deep Learning Architectures</title>
+<style>
+  :root{
+    --cream:#F5F0E8; --cream2:#FBF7F0; --charcoal:#2B2620; --ink:#4a4030;
+    --gold:#C9A227; --gold-soft:#E8D9A8; --line:#E0D8C8; --line2:#D8CFC0;
+    --teal:#0F6E56; --coral:#993C1D; --blue:#185FA5; --mut:#6b6253;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{margin:0; background:var(--cream); color:var(--charcoal);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65; font-size:16px;}
+  .wrap{max-width:860px; margin:0 auto; padding:0 24px;}
+
+  .topnav{position:sticky; top:0; z-index:50; background:rgba(245,240,232,.92);
+    backdrop-filter:blur(8px); border-bottom:1px solid var(--line2);}
+  .topnav .wrap{display:flex; gap:6px; flex-wrap:wrap; align-items:center; padding-top:10px; padding-bottom:10px;}
+  .topnav a{font-size:12.5px; text-decoration:none; color:var(--ink);
+    padding:5px 11px; border-radius:20px; border:1px solid transparent; white-space:nowrap;}
+  .topnav a:hover{background:var(--cream2); border-color:var(--line2);}
+  .topnav a.brand{font-weight:700; color:var(--charcoal); padding-left:0; margin-right:6px;}
+  .topnav a.brand:hover{background:none; border-color:transparent;}
+
+  header.hero{padding:56px 0 34px;}
+  .eyebrow{display:inline-block; font-size:12px; letter-spacing:.16em; text-transform:uppercase;
+    color:var(--gold); font-weight:700; border:1px solid var(--gold-soft);
+    padding:5px 12px; border-radius:20px; background:var(--cream2);}
+  h1{font-size:40px; line-height:1.1; margin:20px 0 8px; font-weight:800; letter-spacing:-.02em;}
+  .sub{font-size:18px; color:var(--mut); max-width:640px;}
+  .rule{height:3px; width:88px; background:var(--gold); border-radius:2px; margin:26px 0 0;}
+
+  section{padding:34px 0; border-top:1px solid var(--line);}
+  .sec-no{font-size:13px; font-weight:700; color:var(--gold); letter-spacing:.12em; text-transform:uppercase;}
+  .sec-tag{font-size:13px; color:var(--mut); margin-left:8px;}
+  h2{font-size:27px; margin:8px 0 6px; font-weight:800; letter-spacing:-.01em;}
+  h3{font-size:18px; margin:26px 0 6px; font-weight:700; color:var(--ink);
+     border-bottom:1px solid var(--line); padding-bottom:5px;}
+  p{margin:12px 0;}
+  .lead{font-size:17px;}
+  em.k{font-style:normal; font-weight:700; color:var(--charcoal); background:var(--gold-soft); padding:0 4px; border-radius:3px;}
+
+  .box{border-radius:12px; padding:18px 20px; margin:18px 0; border:1px solid var(--line2);}
+  .box .lbl{font-size:11px; letter-spacing:.14em; text-transform:uppercase; font-weight:700; margin-bottom:6px;}
+  .analogy{background:var(--cream2); border-left:4px solid var(--gold); border-radius:0 12px 12px 0;}
+  .analogy .lbl{color:var(--gold);}
+  .formula{background:var(--charcoal); color:#f3ecd9; border:none; font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace;}
+  .formula .lbl{color:var(--gold-soft);}
+  .formula pre{margin:0; font-size:13.5px; line-height:1.7; white-space:pre-wrap; overflow-x:auto;}
+  .formula .note{color:#b8ab8a; font-size:12.5px; margin-top:10px; font-family:inherit;}
+  .worked{background:#fff; border:1px solid var(--line2);}
+  .worked .lbl{color:var(--teal);}
+  .worked pre{margin:0; font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace;
+    font-size:13px; line-height:1.75; white-space:pre-wrap; overflow-x:auto; color:#33302a;}
+  .worked .takeaway{margin-top:12px; padding-top:12px; border-top:1px dashed var(--line2);
+    font-size:14px; color:var(--ink);}
+  .flaw{background:#FAECE7; border-left:4px solid var(--coral); border-radius:0 12px 12px 0;}
+  .flaw .lbl{color:var(--coral);}
+  .win{background:#E6F1EC; border-left:4px solid var(--teal); border-radius:0 12px 12px 0;}
+  .win .lbl{color:var(--teal);}
+
+  blockquote{margin:22px 0; padding:4px 0 4px 22px; border-left:3px solid var(--gold);
+    font-size:19px; font-style:italic; color:var(--ink); line-height:1.5;}
+  blockquote cite{display:block; font-size:13px; font-style:normal; color:var(--mut); margin-top:8px;}
+
+  table{width:100%; border-collapse:collapse; margin:18px 0; font-size:14.5px;}
+  th{background:var(--charcoal); color:#fff; text-align:left; padding:10px 13px; font-weight:600;}
+  th:first-child{border-radius:8px 0 0 0;} th:last-child{border-radius:0 8px 0 0;}
+  td{border:1px solid var(--line2); padding:9px 13px; vertical-align:top;}
+  tr:nth-child(even) td{background:var(--cream2);}
+  td strong{color:var(--charcoal);}
+
+  .bottomline{background:var(--charcoal); color:#f3ecd9; border-radius:12px; padding:22px 24px; margin:22px 0 0;}
+  .bottomline .lbl{color:var(--gold); font-size:11px; letter-spacing:.14em; text-transform:uppercase; font-weight:700;}
+  .bottomline p{margin:8px 0 0; color:#ece4d2;}
+
+  /* gate cards */
+  .gates{display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:14px; margin:18px 0;}
+  .gatecard{background:#fff; border:1px solid var(--line2); border-radius:12px; padding:16px 18px;}
+  .gatecard .gname{font-weight:700; font-size:15px; margin-bottom:4px;}
+  .gatecard .gtag{font-size:12px; color:var(--mut); font-weight:600; text-transform:uppercase; letter-spacing:.05em;}
+  .gatecard.forget{border-top:3px solid var(--coral);}
+  .gatecard.input{border-top:3px solid var(--blue);}
+  .gatecard.output{border-top:3px solid var(--teal);}
+  .gatecard p{font-size:13.5px; margin:8px 0 0; color:var(--ink);}
+
+  /* demo */
+  .demo{background:#fff; border:1px solid var(--line2); border-radius:14px; padding:22px; margin:20px 0;}
+  .seqpick{display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:14px;}
+  .seqpick .clabel{font-size:13px; color:var(--ink); font-weight:600; margin-right:4px;}
+  .seg button{font-size:12px; padding:7px 12px; border:1px solid var(--line2);
+    background:var(--cream2); border-radius:7px; cursor:pointer; color:var(--ink);}
+  .seg button.on{background:var(--gold); color:#fff; border-color:var(--gold); font-weight:600;}
+  .lstm-svg-wrap{overflow-x:auto; padding-bottom:6px;}
+  svg{display:block;}
+  .gatereadout{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:14px;}
+  .gr{background:var(--cream2); border-radius:10px; padding:11px 12px;}
+  .gr .grn{font-size:11px; letter-spacing:.06em; text-transform:uppercase; font-weight:700;}
+  .gr.forget .grn{color:var(--coral);} .gr.input .grn{color:var(--blue);} .gr.output .grn{color:var(--teal);}
+  .gr .grv{font-size:20px; font-weight:800; font-variant-numeric:tabular-nums; margin-top:3px;}
+  .gr .grd{font-size:11.5px; color:var(--mut); margin-top:2px;}
+  .calcbox{background:var(--cream2); border-radius:10px; padding:13px 14px; margin-top:12px;}
+  .calcbox .ct{font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--mut); font-weight:700;}
+  .calcbox .cmath{font-family:"SF Mono",monospace; font-size:12.5px; color:#33302a; margin-top:6px; line-height:1.6;}
+  .playbar{display:flex; gap:8px; align-items:center; margin-top:14px; flex-wrap:wrap;}
+  .playbar button{font-size:13px; padding:8px 14px; border:1px solid var(--line2); background:var(--charcoal);
+    color:#fff; border-radius:8px; cursor:pointer; font-weight:600;}
+  .playbar button.ghost{background:var(--cream2); color:var(--ink);}
+  .legend{display:flex; gap:16px; flex-wrap:wrap; font-size:12px; color:var(--mut); margin-top:14px;}
+  .legend i{display:inline-block; width:12px; height:12px; border-radius:3px; vertical-align:-1px; margin-right:5px;}
+
+  footer{padding:40px 0 60px; border-top:1px solid var(--line); color:var(--mut); font-size:14px;}
+
+  @media (max-width:560px){h1{font-size:31px;} h2{font-size:23px;} .wrap{padding:0 16px;}}
+</style>
+</head>
+<body>
+
+<nav class="topnav"><div class="wrap">
+  <a href="#top" class="brand">Ch 3 · Deep Learning Architectures</a>
+  <a href="#intro">Intro</a>
+  <a href="#analogy">Analogy</a>
+  <a href="#gates">The gates</a>
+  <a href="#math">The math</a>
+  <a href="#demo">Live demo</a>
+  <a href="#why">Why it works</a>
+  <a href="#props">Properties</a>
+  <a href="#bottom">Bottom line</a>
+</div></nav>
+
+<div class="wrap" id="top">
+
+<header class="hero" id="intro">
+  <span class="eyebrow">3.4 · Long Short-Term Memory</span>
+  <h1>Memory You Can Protect</h1>
+  <p class="sub">A recurrent cell with gates — small valves that decide what to forget, what to store, and what to reveal — and a protected cell state that lets information travel across hundreds of steps untouched.</p>
+  <div class="rule"></div>
+</header>
+
+<section style="border-top:none; padding-top:8px;">
+  <p class="lead">In 3.3 we watched a plain RNN's memory fade. Because it multiplies by the same matrix at every step, the trace of an early input decays toward zero long before a long sequence ends. You saw it literally on the demo: the gold tint of input #1 dissolving by step twelve. The network could carry memory in principle, but not in practice.</p>
+
+  <p>The <em class="k">Long Short-Term Memory (LSTM)</em> network, introduced by Hochreiter and Schmidhuber in 1997, fixes this with two ideas. First, a separate <em class="k">cell state</em> — a memory conveyor belt that runs straight through every step with only minor, controlled edits, so information can flow across long distances without being repeatedly squashed. Second, a set of <em class="k">gates</em>: tiny learned valves that decide, at each step, what to erase from memory, what to write into it, and what to expose to the rest of the network. Memory stops being a side effect of the math and becomes something the network actively manages.</p>
+</section>
+
+<section id="analogy">
+  <span class="sec-no">01</span><span class="sec-tag">Building the intuition</span>
+  <h2>A running whiteboard with an eraser</h2>
+  <div class="box analogy">
+    <div class="lbl">Analogy</div>
+    <p style="margin-top:0;">Imagine you're tracking a long meeting on a whiteboard. You don't rewrite the whole board every minute. Instead you do three small things as new points come up: you <strong>erase</strong> what's no longer relevant (the topic that just got resolved), you <strong>add</strong> the genuinely new decisions worth keeping, and when someone asks a question, you <strong>read off</strong> just the part of the board that's relevant to answer them. The board itself persists across the whole meeting — most of what you wrote an hour ago is still there, untouched.</p>
+    <p style="margin-bottom:0;">That whiteboard is the <strong>cell state</strong> — long-lived memory that survives across many steps. The eraser is the <strong>forget gate</strong>. Adding new notes is the <strong>input gate</strong>. Reading off the relevant part to answer is the <strong>output gate</strong>. A plain RNN had to smear its entire memory through a tanh at every step, like rewriting the whole board every minute until the early notes turned to mush. The LSTM just makes small, deliberate edits — so "France" from fifty words ago is still legible when you finally need to say "French."</p>
+  </div>
+</section>
+
+<section id="gates">
+  <span class="sec-no">02</span><span class="sec-tag">The three valves</span>
+  <h2>The gates, and the cell state they guard</h2>
+  <p>Every gate is itself a tiny neural layer that outputs numbers between 0 and 1 — produced by a <strong>sigmoid</strong> (recall from Chapter 2: sigmoid squashes to 0…1, perfect for a valve). A gate value near 0 means "block this," near 1 means "let it through." Multiplying the memory by these gate values is how the LSTM controls flow.</p>
+
+  <div class="gates">
+    <div class="gatecard forget">
+      <div class="gtag">Sigmoid · 0 to 1</div>
+      <div class="gname">Forget gate (f)</div>
+      <p>Looks at the new input and the previous output, and decides what fraction of each item in the cell state to <em>keep</em>. 0 = erase it, 1 = keep it fully.</p>
+    </div>
+    <div class="gatecard input">
+      <div class="gtag">Sigmoid + tanh</div>
+      <div class="gname">Input gate (i)</div>
+      <p>Decides what new information to <em>write</em> into the cell state. A sigmoid picks how much to write; a tanh proposes the candidate values to add.</p>
+    </div>
+    <div class="gatecard output">
+      <div class="gtag">Sigmoid · 0 to 1</div>
+      <div class="gname">Output gate (o)</div>
+      <p>Decides what part of the (now-updated) cell state to <em>reveal</em> as this step's hidden output — the value passed to the next step and any prediction.</p>
+    </div>
+  </div>
+
+  <p>The <em class="k">cell state</em> (written <code>C_t</code>) is the conveyor belt these gates act on. Its update is beautifully simple: forget some of the old, add some of the new. That's it. Because the dominant operation on the cell state is <em>addition</em> rather than repeated multiplication-and-squashing, gradients can flow back across many steps without vanishing. This is the whole reason the LSTM remembers.</p>
+
+  <h3 id="math">The math that matters</h3>
+  <div class="box formula">
+    <div class="lbl">Formula · one LSTM step</div>
+<pre>Gates (each a sigmoid over [previous output, new input]):
+   f_t = σ( W_f &middot; [h_(t-1), x_t] + b_f )    forget
+   i_t = σ( W_i &middot; [h_(t-1), x_t] + b_i )    input
+   o_t = σ( W_o &middot; [h_(t-1), x_t] + b_o )    output
+
+Candidate new memory:
+   C̃_t = tanh( W_c &middot; [h_(t-1), x_t] + b_c )
+
+Update the cell state (the conveyor belt):
+   C_t = f_t * C_(t-1)  +  i_t * C̃_t
+         └─ keep old ─┘    └─ add new ─┘
+
+Produce the hidden output:
+   h_t = o_t * tanh( C_t )</pre>
+    <div class="note">Look at the C_t line. The old memory C_(t-1) is multiplied by a gate (kept or erased) and the new candidate is added in. No repeated squashing of the whole memory — just gated keep-and-add. That additive path is the highway the gradient travels on, and why a 1997 architecture beat plain RNNs decisively on long sequences.</div>
+  </div>
+</section>
+
+<section id="worked">
+  <span class="sec-no">03</span><span class="sec-tag">Numbers on paper</span>
+  <h2>Worked example — remembering across a gap</h2>
+  <p>One cell unit holds a memory value. We want it to <em>preserve</em> a stored fact through a step where nothing relevant happens, then update when something does.</p>
+
+  <div class="box worked">
+    <div class="lbl">Worked Example · the cell state holds on</div>
+<pre>Stored memory coming in:  C_(t-1) = 0.90   ("France" is remembered)
+
+STEP A — an irrelevant word arrives ("and")
+  Gates decide nothing important changed:
+   f = 0.95   (keep almost all of memory)
+   i = 0.05   (write almost nothing)
+   C̃ = 0.40   (some candidate, but barely used)
+
+  C_t = f&times;C_(t-1) + i&times;C̃
+      = 0.95&times;0.90 + 0.05&times;0.40
+      = 0.855 + 0.020 = 0.875     ← memory nearly intact
+
+STEP B — the relevant cue arrives ("speak")
+  Now the gates open to update:
+   f = 0.60   (release some old)
+   i = 0.90   (write strongly)
+   C̃ = 0.95
+  C_t = 0.60&times;0.875 + 0.90&times;0.95
+      = 0.525 + 0.855 = 1.000 (clipped) ← memory refreshed</pre>
+    <div class="takeaway"><strong>Read the contrast:</strong> at step A the forget gate stays near 1 and the input gate near 0, so the cell state barely moves — the fact survives the gap. A plain RNN couldn't do this; its tanh would erode the value every step regardless. The gates give the LSTM a choice the RNN never had. See it run live below.</div>
+  </div>
+</section>
+
+<section id="demo">
+  <span class="sec-no">04</span><span class="sec-tag">Interactive</span>
+  <h2>Watch the gates open and the memory hold</h2>
+  <p>The thick belt running along the top is the <em>cell state</em> — long-term memory. Below it, each step shows the three gates as valves that fill up (open) or empty (closed). Step through a sequence and watch: on "boring" steps the forget gate stays open and the input gate stays shut, so the cell state glides through almost unchanged. On the highlighted <strong>keep-this</strong> step, the memory written there persists all the way to the end — the exact thing the plain RNN failed to do in 3.3.</p>
+
+  <div class="demo">
+    <div class="seqpick">
+      <span class="clabel">Scenario:</span>
+      <div class="seg" id="seqSeg">
+        <button data-s="0" class="on">Hold a fact</button>
+        <button data-s="1">Update midway</button>
+      </div>
+    </div>
+
+    <div class="lstm-svg-wrap">
+      <svg id="lstmSvg" height="250" aria-label="LSTM cell state and gates across time steps"></svg>
+    </div>
+
+    <div class="gatereadout">
+      <div class="gr forget"><div class="grn">Forget gate</div><div class="grv" id="grF">—</div><div class="grd" id="grFd">keep old memory</div></div>
+      <div class="gr input"><div class="grn">Input gate</div><div class="grv" id="grI">—</div><div class="grd" id="grId">write new info</div></div>
+      <div class="gr output"><div class="grn">Output gate</div><div class="grv" id="grO">—</div><div class="grd" id="grOd">reveal memory</div></div>
+    </div>
+
+    <div class="calcbox">
+      <div class="ct">Cell state update this step</div>
+      <div class="cmath" id="calcMath">Press Step to begin.</div>
+    </div>
+
+    <div class="playbar">
+      <button id="stepBtn">Step ▸</button>
+      <button id="playBtn" class="ghost">Auto-play</button>
+      <button id="resetBtn" class="ghost">Reset</button>
+    </div>
+
+    <div class="legend">
+      <span><i style="background:#0F6E56"></i>High cell state</span>
+      <span><i style="background:#E8D9A8"></i>Low cell state</span>
+      <span><i style="background:#C9A227"></i>Gate open (≈1)</span>
+      <span><i style="background:#D8CFC0"></i>Gate closed (≈0)</span>
+    </div>
+  </div>
+  <p style="font-size:14px; color:var(--mut);">Compare this directly to the 3.3 demo. There, input #1's gold trace faded to nothing. Here, the memory written on the keep-this step rides the cell-state belt to the end at near-full strength, because the forget gate chooses to keep it. That choice — held memory versus forced decay — is the entire advance of the LSTM.</p>
+</section>
+
+<section id="why">
+  <span class="sec-no">05</span><span class="sec-tag">Why it works &amp; what it costs</span>
+  <h2>The additive highway, and the price of it</h2>
+  <div class="box win">
+    <div class="lbl">Why LSTMs solved the long-range problem</div>
+    <p style="margin-top:0;">In a plain RNN, the path from an early input to a late one runs through a tanh at every step, and the gradient gets multiplied down each time — it vanishes. In an LSTM, the cell state's main path is <strong>additive</strong> (<code>C_t = f&middot;C_(t-1) + i&middot;C̃</code>). When the forget gate stays near 1, the gradient flows backward along that path almost unchanged — a near-constant-error highway across time. That's the mechanism behind "long-range memory" in one sentence.</p>
+    <p style="margin-bottom:0;">For roughly two decades, LSTMs were the workhorse of sequence modeling: machine translation, speech recognition, handwriting, time-series forecasting. If it was a sequence, an LSTM was likely under the hood.</p>
+  </div>
+
+  <div class="box flaw">
+    <div class="lbl">What LSTMs still don't fix</div>
+    <p style="margin-top:0;">Two costs remain. First, <strong>complexity</strong>: four neural layers (three gates plus the candidate) per cell means more parameters and slower training than a plain RNN. The <strong>GRU (3.5)</strong> is a direct response — a leaner gated cell that merges some of these for similar performance with less machinery.</p>
+    <p style="margin-bottom:0;">Second, and far more important: an LSTM is <strong>still sequential</strong>. It must process step 1 before step 2 before step 3 — there's no way to compute them in parallel. On modern hardware built for massive parallelism, this is a severe bottleneck, and it grows with sequence length. That single limitation — not memory, but <em>speed and parallelism</em> — is what eventually motivated attention and the Transformer. We meet it head-on in <strong>3.6</strong>.</p>
+  </div>
+
+  <blockquote>
+    The LSTM didn't make the network remember more by trying harder. It made memory a thing the network could choose to protect — and that one shift in design held up the entire field of sequence modeling for twenty years.
+    <cite>On why gating mattered</cite>
+  </blockquote>
+</section>
+
+<section id="props">
+  <span class="sec-no">06</span><span class="sec-tag">At a glance</span>
+  <h2>Properties</h2>
+  <table>
+    <tr><th>Property</th><th>Value</th><th>Notes</th></tr>
+    <tr><td><strong>Core addition</strong></td><td>Cell state + gates</td><td>A protected memory belt managed by learned valves</td></tr>
+    <tr><td><strong>Forget gate</strong></td><td>Sigmoid (0–1)</td><td>How much old memory to keep</td></tr>
+    <tr><td><strong>Input gate</strong></td><td>Sigmoid + tanh</td><td>How much new info to write, and what</td></tr>
+    <tr><td><strong>Output gate</strong></td><td>Sigmoid (0–1)</td><td>How much of the cell state to reveal</td></tr>
+    <tr><td><strong>Key mechanism</strong></td><td>Additive cell update</td><td>Gradient highway — solves vanishing over time</td></tr>
+    <tr><td><strong>Strength</strong></td><td>Long-range memory</td><td>Hundreds of steps; translation, speech, time series</td></tr>
+    <tr><td><strong>Cost</strong></td><td>4&times; the parameters</td><td>Heavier than RNN — motivates the GRU</td></tr>
+    <tr><td><strong>Hard limit</strong></td><td>Still sequential</td><td>Can't parallelize across time — motivates attention</td></tr>
+  </table>
+</section>
+
+<section id="bottom" style="padding-bottom:10px;">
+  <div class="bottomline">
+    <div class="lbl">Bottom Line</div>
+    <p>The LSTM gives a recurrent network a memory it can protect. A separate cell state carries information across long distances along a mostly-additive path, while three gates — forget, input, output — decide at each step what to erase, what to store, and what to reveal. This solved the vanishing-memory problem that crippled plain RNNs, and made LSTMs the backbone of sequence modeling for two decades. But they pay for it with four times the parameters, which the GRU trims next, and they remain fundamentally sequential — the one limitation gating cannot fix, and the door through which attention and the Transformer eventually arrive.</p>
+  </div>
+</section>
+
+<footer>
+  <p><strong>Next up — 3.5 GRU.</strong> A leaner gated cell that merges the forget and input gates and drops the separate cell state — near-LSTM performance with less machinery, in the same interactive format.</p>
+  <p style="font-size:13px;">Chapter 3 · Deep Learning Architectures &nbsp;·&nbsp; Lead AI Engineer curriculum &nbsp;·&nbsp; Track B</p>
+</footer>
+
+</div>
+
+<script>
+(function(){
+  var NS="http://www.w3.org/2000/svg";
+  // scenarios: each step has gate values {f,i,c} and a label; cell state computed from them
+  var scenarios=[
+    { // hold a fact: write at step 1, keep through, reveal at end
+      label:"Hold a fact",
+      steps:[
+        {x:"France", f:0.10, i:0.95, c:0.95, o:0.30, note:"store", keep:true},
+        {x:"and",    f:0.96, i:0.05, c:0.30, o:0.20, note:"ignore"},
+        {x:"I",      f:0.95, i:0.06, c:0.20, o:0.20, note:"ignore"},
+        {x:"now",    f:0.96, i:0.04, c:0.10, o:0.25, note:"ignore"},
+        {x:"speak",  f:0.92, i:0.10, c:0.40, o:0.55, note:"prepare"},
+        {x:"fluent", f:0.94, i:0.08, c:0.30, o:0.95, note:"reveal"}
+      ]
+    },
+    { // update midway: store, hold, overwrite at step 4, hold, reveal
+      label:"Update midway",
+      steps:[
+        {x:"cold",   f:0.10, i:0.92, c:0.85, o:0.30, note:"store", keep:true},
+        {x:"day",    f:0.95, i:0.06, c:0.30, o:0.20, note:"ignore"},
+        {x:"but",    f:0.94, i:0.08, c:0.25, o:0.25, note:"ignore"},
+        {x:"now",    f:0.30, i:0.90, c:0.10, o:0.30, note:"overwrite", keep:true},
+        {x:"warm",   f:0.93, i:0.10, c:0.20, o:0.40, note:"hold"},
+        {x:"outside",f:0.92, i:0.09, c:0.30, o:0.92, note:"reveal"}
+      ]
+    }
+  ];
+  var sIdx=0, pos=-1, timer=null;
+
+  function el(t,a){var e=document.createElementNS(NS,t);for(var k in a)e.setAttribute(k,a[k]);return e;}
+
+  function cellStates(steps){
+    var C=[], prev=0;
+    for(var t=0;t<steps.length;t++){
+      var s=steps[t];
+      var c=s.f*prev + s.i*s.c;
+      c=Math.max(0,Math.min(1,c));
+      C.push(c); prev=c;
+    }
+    return C;
+  }
+  function cellColor(v){ // 0..1 cream..teal
+    var t=Math.max(0,Math.min(1,v));
+    var c0=[232,217,168], c1=[15,110,86];
+    return "rgb("+Math.round(c0[0]+(c1[0]-c0[0])*t)+","+Math.round(c0[1]+(c1[1]-c0[1])*t)+","+Math.round(c0[2]+(c1[2]-c0[2])*t)+")";
+  }
+  function gateColor(v){ // 0 closed (line2) .. 1 open (gold)
+    var t=Math.max(0,Math.min(1,v));
+    var c0=[216,207,192], c1=[201,162,39];
+    return "rgb("+Math.round(c0[0]+(c1[0]-c0[0])*t)+","+Math.round(c0[1]+(c1[1]-c0[1])*t)+","+Math.round(c0[2]+(c1[2]-c0[2])*t)+")";
+  }
+
+  var svg=document.getElementById("lstmSvg");
+
+  function draw(){
+    var sc=scenarios[sIdx], steps=sc.steps, C=cellStates(steps);
+    var n=steps.length;
+    var cw=118, padL=20, beltY=34, beltH=20;
+    var W=padL + n*cw + 20;
+    svg.setAttribute("width",W); svg.setAttribute("viewBox","0 0 "+W+" 250");
+    svg.innerHTML="";
+
+    // belt label
+    var bl=el("text",{x:padL,y:24,"font-size":"11","font-family":"monospace","font-weight":"700",fill:"#0F6E56"});
+    bl.textContent="CELL STATE  (long-term memory belt) →"; svg.appendChild(bl);
+
+    for(var t=0;t<n;t++){
+      var cx=padL + t*cw;
+      var active = t<=pos;
+      var s=steps[t];
+
+      // belt segment
+      svg.appendChild(el("rect",{x:cx,y:beltY,width:cw-6,height:beltH,rx:5,
+        fill: active?cellColor(C[t]):"#FBF7F0",
+        stroke: s.keep?"#0F6E56":"#D8CFC0","stroke-width": s.keep?2:1}));
+      if(active){
+        var cv=el("text",{x:cx+(cw-6)/2,y:beltY+beltH/2+4,"text-anchor":"middle","font-size":"11",
+          "font-family":"monospace","font-weight":"700",fill: C[t]>0.5?"#f3ecd9":"#33302a"});
+        cv.textContent="C="+C[t].toFixed(2); svg.appendChild(cv);
+      }
+      // keep-this badge
+      if(s.keep){
+        var kb=el("text",{x:cx+(cw-6)/2,y:beltY-4,"text-anchor":"middle","font-size":"9",
+          "font-family":"sans-serif","font-weight":"700",fill:"#0F6E56"});
+        kb.textContent="★ keep this"; svg.appendChild(kb);
+      }
+
+      // gate column (three small valves)
+      var gy=86, gh=16, gw=30, gx=cx+(cw-6)/2-gw/2;
+      var gates=[["f",s.f,"#993C1D"],["i",s.i,"#185FA5"],["o",s.o,"#0F6E56"]];
+      for(var gi=0; gi<3; gi++){
+        var yy=gy+gi*(gh+6);
+        // valve track
+        svg.appendChild(el("rect",{x:gx,y:yy,width:gw,height:gh,rx:4,
+          fill:"#F1ECE2",stroke:"#D8CFC0","stroke-width":1}));
+        // valve fill (how open)
+        var openW = active? (gw-4)*gates[gi][1] : 0;
+        svg.appendChild(el("rect",{x:gx+2,y:yy+2,width:Math.max(0,openW),height:gh-4,rx:3,
+          fill: active?gateColor(gates[gi][1]):"#F1ECE2"}));
+        // label
+        var gl=el("text",{x:gx-7,y:yy+gh/2+4,"text-anchor":"end","font-size":"10",
+          "font-family":"monospace","font-weight":"700",fill:gates[gi][2]});
+        gl.textContent=gates[gi][0]; svg.appendChild(gl);
+      }
+
+      // input token
+      var inActive=active;
+      svg.appendChild(el("rect",{x:cx+(cw-6)/2-32,y:196,width:64,height:28,rx:6,
+        fill: inActive?"#FBF7F0":"#F1ECE2", stroke: t===pos?"#2B2620":(inActive?"#C9A227":"#D8CFC0"),
+        "stroke-width": t===pos?2:1.2}));
+      var xt=el("text",{x:cx+(cw-6)/2,y:214,"text-anchor":"middle","font-size":"12",
+        "font-family":"sans-serif","font-weight":"600",fill: inActive?"#33302a":"#b3a995"});
+      xt.textContent=s.x; svg.appendChild(xt);
+    }
+
+    // gate readouts + calc
+    var s2=steps[pos];
+    function setG(id,did,val,onTxt,offTxt){
+      document.getElementById(id).textContent = (pos<0)?"—":val.toFixed(2);
+      document.getElementById(did).textContent = (pos<0)?"" : (val>0.5?onTxt:offTxt);
+    }
+    if(pos>=0){
+      setG("grF","grFd",s2.f,"keeping memory","releasing memory");
+      setG("grI","grId",s2.i,"writing new info","writing little");
+      setG("grO","grOd",s2.o,"revealing memory","staying quiet");
+      var prevC = pos===0?0:C[pos-1];
+      document.getElementById("calcMath").innerHTML =
+        "C<sub>"+(pos+1)+"</sub> = f&times;C<sub>prev</sub> + i&times;C̃<br>"+
+        "&nbsp;&nbsp;&nbsp; = "+s2.f.toFixed(2)+"&times;"+prevC.toFixed(2)+" + "+s2.i.toFixed(2)+"&times;"+s2.c.toFixed(2)+
+        " = <b>"+C[pos].toFixed(2)+"</b>"+
+        (s2.keep?"<br><span style='color:#0F6E56'>★ this memory is meant to persist</span>":
+          (s2.f>0.85&&s2.i<0.15?"<br><span style='color:#6b6253'>gates mostly closed → memory glides through nearly unchanged</span>":""));
+    } else {
+      ["grF","grI","grO"].forEach(function(id){document.getElementById(id).textContent="—";});
+      ["grFd","grId","grOd"].forEach(function(id){document.getElementById(id).textContent="";});
+      document.getElementById("calcMath").textContent="Press Step to feed the first token.";
+    }
+  }
+
+  function step(){ var n=scenarios[sIdx].steps.length; pos++; if(pos>=n){pos=n-1; if(timer){clearInterval(timer);timer=null;document.getElementById("playBtn").textContent="Auto-play";}} draw(); }
+  function reset(){ pos=-1; draw(); }
+
+  document.getElementById("stepBtn").addEventListener("click",function(){
+    if(timer){clearInterval(timer);timer=null;document.getElementById("playBtn").textContent="Auto-play";}
+    if(pos<scenarios[sIdx].steps.length-1) step();
+  });
+  document.getElementById("resetBtn").addEventListener("click",function(){
+    if(timer){clearInterval(timer);timer=null;document.getElementById("playBtn").textContent="Auto-play";}
+    reset();
+  });
+  document.getElementById("playBtn").addEventListener("click",function(){
+    var b=this;
+    if(timer){clearInterval(timer);timer=null;b.textContent="Auto-play";}
+    else{ if(pos>=scenarios[sIdx].steps.length-1) reset(); b.textContent="Pause"; timer=setInterval(step,800); }
+  });
+  var seg=document.getElementById("seqSeg");
+  seg.querySelectorAll("button").forEach(function(btn){
+    btn.addEventListener("click",function(){
+      seg.querySelectorAll("button").forEach(function(x){x.classList.remove("on");});
+      btn.classList.add("on"); sIdx=parseInt(btn.getAttribute("data-s"));
+      if(timer){clearInterval(timer);timer=null;document.getElementById("playBtn").textContent="Auto-play";}
+      reset();
+    });
+  });
+
+  draw();
+})();
+</script>
+
+</body>
+</html>

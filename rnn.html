@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3.3 Recurrent Neural Networks — Deep Learning Architectures</title>
+<style>
+  :root{
+    --cream:#F5F0E8; --cream2:#FBF7F0; --charcoal:#2B2620; --ink:#4a4030;
+    --gold:#C9A227; --gold-soft:#E8D9A8; --line:#E0D8C8; --line2:#D8CFC0;
+    --teal:#0F6E56; --coral:#993C1D; --blue:#185FA5; --mut:#6b6253;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{margin:0; background:var(--cream); color:var(--charcoal);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65; font-size:16px;}
+  .wrap{max-width:860px; margin:0 auto; padding:0 24px;}
+
+  .topnav{position:sticky; top:0; z-index:50; background:rgba(245,240,232,.92);
+    backdrop-filter:blur(8px); border-bottom:1px solid var(--line2);}
+  .topnav .wrap{display:flex; gap:6px; flex-wrap:wrap; align-items:center; padding-top:10px; padding-bottom:10px;}
+  .topnav a{font-size:12.5px; text-decoration:none; color:var(--ink);
+    padding:5px 11px; border-radius:20px; border:1px solid transparent; white-space:nowrap;}
+  .topnav a:hover{background:var(--cream2); border-color:var(--line2);}
+  .topnav a.brand{font-weight:700; color:var(--charcoal); padding-left:0; margin-right:6px;}
+  .topnav a.brand:hover{background:none; border-color:transparent;}
+
+  header.hero{padding:56px 0 34px;}
+  .eyebrow{display:inline-block; font-size:12px; letter-spacing:.16em; text-transform:uppercase;
+    color:var(--gold); font-weight:700; border:1px solid var(--gold-soft);
+    padding:5px 12px; border-radius:20px; background:var(--cream2);}
+  h1{font-size:40px; line-height:1.1; margin:20px 0 8px; font-weight:800; letter-spacing:-.02em;}
+  .sub{font-size:18px; color:var(--mut); max-width:640px;}
+  .rule{height:3px; width:88px; background:var(--gold); border-radius:2px; margin:26px 0 0;}
+
+  section{padding:34px 0; border-top:1px solid var(--line);}
+  .sec-no{font-size:13px; font-weight:700; color:var(--gold); letter-spacing:.12em; text-transform:uppercase;}
+  .sec-tag{font-size:13px; color:var(--mut); margin-left:8px;}
+  h2{font-size:27px; margin:8px 0 6px; font-weight:800; letter-spacing:-.01em;}
+  h3{font-size:18px; margin:26px 0 6px; font-weight:700; color:var(--ink);
+     border-bottom:1px solid var(--line); padding-bottom:5px;}
+  p{margin:12px 0;}
+  .lead{font-size:17px;}
+  em.k{font-style:normal; font-weight:700; color:var(--charcoal); background:var(--gold-soft); padding:0 4px; border-radius:3px;}
+
+  .box{border-radius:12px; padding:18px 20px; margin:18px 0; border:1px solid var(--line2);}
+  .box .lbl{font-size:11px; letter-spacing:.14em; text-transform:uppercase; font-weight:700; margin-bottom:6px;}
+  .analogy{background:var(--cream2); border-left:4px solid var(--gold); border-radius:0 12px 12px 0;}
+  .analogy .lbl{color:var(--gold);}
+  .formula{background:var(--charcoal); color:#f3ecd9; border:none; font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace;}
+  .formula .lbl{color:var(--gold-soft);}
+  .formula pre{margin:0; font-size:14px; line-height:1.7; white-space:pre-wrap; overflow-x:auto;}
+  .formula .note{color:#b8ab8a; font-size:12.5px; margin-top:10px; font-family:inherit;}
+  .worked{background:#fff; border:1px solid var(--line2);}
+  .worked .lbl{color:var(--teal);}
+  .worked pre{margin:0; font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace;
+    font-size:13px; line-height:1.75; white-space:pre-wrap; overflow-x:auto; color:#33302a;}
+  .worked .takeaway{margin-top:12px; padding-top:12px; border-top:1px dashed var(--line2);
+    font-size:14px; color:var(--ink);}
+  .flaw{background:#FAECE7; border-left:4px solid var(--coral); border-radius:0 12px 12px 0;}
+  .flaw .lbl{color:var(--coral);}
+
+  blockquote{margin:22px 0; padding:4px 0 4px 22px; border-left:3px solid var(--gold);
+    font-size:19px; font-style:italic; color:var(--ink); line-height:1.5;}
+  blockquote cite{display:block; font-size:13px; font-style:normal; color:var(--mut); margin-top:8px;}
+
+  table{width:100%; border-collapse:collapse; margin:18px 0; font-size:14.5px;}
+  th{background:var(--charcoal); color:#fff; text-align:left; padding:10px 13px; font-weight:600;}
+  th:first-child{border-radius:8px 0 0 0;} th:last-child{border-radius:0 8px 0 0;}
+  td{border:1px solid var(--line2); padding:9px 13px; vertical-align:top;}
+  tr:nth-child(even) td{background:var(--cream2);}
+  td strong{color:var(--charcoal);}
+
+  .bottomline{background:var(--charcoal); color:#f3ecd9; border-radius:12px; padding:22px 24px; margin:22px 0 0;}
+  .bottomline .lbl{color:var(--gold); font-size:11px; letter-spacing:.14em; text-transform:uppercase; font-weight:700;}
+  .bottomline p{margin:8px 0 0; color:#ece4d2;}
+
+  /* demo */
+  .demo{background:#fff; border:1px solid var(--line2); border-radius:14px; padding:22px; margin:20px 0;}
+  .demo h4{margin:0 0 4px; font-size:16px; font-weight:700;}
+  .seqpick{display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:16px;}
+  .seqpick .clabel{font-size:13px; color:var(--ink); font-weight:600; margin-right:4px;}
+  .seg button{font-size:12px; padding:7px 12px; border:1px solid var(--line2);
+    background:var(--cream2); border-radius:7px; cursor:pointer; color:var(--ink);}
+  .seg button.on{background:var(--gold); color:#fff; border-color:var(--gold); font-weight:600;}
+  .rnn-svg-wrap{overflow-x:auto; padding-bottom:6px;}
+  svg{display:block;}
+  .calcbox{background:var(--cream2); border-radius:10px; padding:13px 14px; margin-top:14px;}
+  .calcbox .ct{font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--mut); font-weight:700;}
+  .calcbox .cmath{font-family:"SF Mono",monospace; font-size:12.5px; color:#33302a; margin-top:6px; line-height:1.6;}
+  .playbar{display:flex; gap:8px; align-items:center; margin-top:14px; flex-wrap:wrap;}
+  .playbar button{font-size:13px; padding:8px 14px; border:1px solid var(--line2); background:var(--charcoal);
+    color:#fff; border-radius:8px; cursor:pointer; font-weight:600;}
+  .playbar button.ghost{background:var(--cream2); color:var(--ink);}
+  .legend{display:flex; gap:16px; flex-wrap:wrap; font-size:12px; color:var(--mut); margin-top:14px;}
+  .legend i{display:inline-block; width:12px; height:12px; border-radius:3px; vertical-align:-1px; margin-right:5px;}
+
+  footer{padding:40px 0 60px; border-top:1px solid var(--line); color:var(--mut); font-size:14px;}
+
+  @media (max-width:560px){h1{font-size:31px;} h2{font-size:23px;} .wrap{padding:0 16px;}}
+</style>
+</head>
+<body>
+
+<nav class="topnav"><div class="wrap">
+  <a href="#top" class="brand">Ch 3 · Deep Learning Architectures</a>
+  <a href="#intro">Intro</a>
+  <a href="#analogy">Analogy</a>
+  <a href="#how">How it works</a>
+  <a href="#math">The math</a>
+  <a href="#demo">Live demo</a>
+  <a href="#unroll">Unrolling</a>
+  <a href="#fade">The fade</a>
+  <a href="#props">Properties</a>
+  <a href="#bottom">Bottom line</a>
+</div></nav>
+
+<div class="wrap" id="top">
+
+<header class="hero" id="intro">
+  <span class="eyebrow">3.3 · Recurrent Neural Networks</span>
+  <h1>Giving the Network Memory</h1>
+  <p class="sub">The architecture that reads in order. A hidden state loops back on itself, carrying the past forward so the network can finally understand sequences — language, audio, time.</p>
+  <div class="rule"></div>
+</header>
+
+<section style="border-top:none; padding-top:8px;">
+  <p class="lead">In 3.2 the CNN gained a sense of <em>space</em>. But it ended on a limitation: the world is full of <em class="k">sequences</em> — sentences, speech, stock prices, sensor streams — where meaning depends on order and on what came before. A CNN's fixed window has no memory of "earlier," and no natural way to handle inputs that vary in length. Read "dog bites man" and "man bites dog" through a feed-forward net and it can't tell that order flipped the meaning.</p>
+
+  <p>The <em class="k">Recurrent Neural Network (RNN)</em> solves this with one elegant move: a loop. It processes a sequence one element at a time, and at each step it keeps a <em class="k">hidden state</em> — a running summary of everything seen so far. That hidden state is fed back into the network alongside the next input, so the past literally flows forward into the present. The same small set of weights is reused at every time step, which is why an RNN can read a sentence of any length.</p>
+</section>
+
+<section id="analogy">
+  <span class="sec-no">01</span><span class="sec-tag">Building the intuition</span>
+  <h2>Reading a novel, one word at a time</h2>
+  <div class="box analogy">
+    <div class="lbl">Analogy</div>
+    <p style="margin-top:0;">Picture yourself reading a mystery novel. You don't re-read the whole book at every sentence — you carry a <strong>running mental summary</strong>: who the suspects are, what's happened, what feels important. Each new sentence updates that summary. By the final page, your understanding of "the butler did it" rests entirely on a memory built up across hundreds of pages, even though you're only looking at one sentence right now.</p>
+    <p style="margin-bottom:0;">That running mental summary is the <strong>hidden state</strong>. Each new word is the <strong>input at this time step</strong>. The act of updating your understanding as you read is the <strong>recurrence</strong>. And crucially, you use the <em>same</em> reading brain for every sentence — you don't grow a new brain per word. That's weight sharing across time. The catch, which we'll meet at the end: details from chapter one start to blur by chapter twenty. Memory fades.</p>
+  </div>
+</section>
+
+<section id="how">
+  <span class="sec-no">02</span><span class="sec-tag">Mechanics</span>
+  <h2>How recurrence works</h2>
+  <p>At each time step <em>t</em>, the RNN takes two things: the current input <code>x_t</code> (this word) and the previous hidden state <code>h_(t-1)</code> (the summary so far). It combines them, squashes the result through an activation — almost always <strong>tanh</strong>, because it keeps the state bounded and centered (recall from Chapter 2 why that matters for stability) — and produces the new hidden state <code>h_t</code>. That new state then becomes the input memory for the next step. Optionally, an output <code>y_t</code> is read off the hidden state at any step.</p>
+
+  <p>The defining feature is that <code>h_t</code> depends on <code>h_(t-1)</code>, which depended on <code>h_(t-2)</code>, all the way back to the start. So the hidden state at the end is, in principle, a function of <em>every</em> input that came before it. One loop, unrolled across time, gives the network memory.</p>
+
+  <h3 id="math">The math that matters</h3>
+  <div class="box formula">
+    <div class="lbl">Formula · the recurrent update</div>
+<pre>At each time step t:
+
+   h_t = tanh( W_xh &middot; x_t  +  W_hh &middot; h_(t-1)  +  b )
+
+   y_t = W_hy &middot; h_t        (optional output)
+
+Three weight matrices, reused at EVERY step:
+   W_xh : input  → hidden   (reads the new element)
+   W_hh : hidden → hidden   (carries the memory forward)
+   W_hy : hidden → output   (reads off a prediction)
+
+h_0 usually starts as all zeros (a blank memory).</pre>
+    <div class="note">Notice W_hh — the hidden-to-hidden matrix. It's the heart of the RNN: the channel through which the past reaches the present. It's also, as we'll see, exactly where long-range memory breaks down, because that same matrix gets multiplied in again at every single step.</div>
+  </div>
+</section>
+
+<section id="worked">
+  <span class="sec-no">03</span><span class="sec-tag">Numbers on paper</span>
+  <h2>Worked example — two steps of recurrence</h2>
+  <p>A tiny RNN with a single hidden unit reads a 2-element sequence. Watch how step 2's hidden state depends on step 1's.</p>
+
+  <div class="box worked">
+    <div class="lbl">Worked Example · unrolling 2 steps</div>
+<pre>Weights:  W_xh = 0.8ic   W_hh = 0.5ic   b = 0
+Sequence: x = [1.0,  0.5]      h_0 = 0
+
+STEP 1  (x_1 = 1.0)
+  h_1 = tanh(0.8&times;1.0 + 0.5&times;0 + 0)
+      = tanh(0.8) = 0.664
+
+STEP 2  (x_2 = 0.5)
+  h_2 = tanh(0.8&times;0.5 + 0.5&times;0.664 + 0)
+      = tanh(0.4 + 0.332)
+      = tanh(0.732) = 0.625
+            ↑
+   this term carries step 1's memory forward</pre>
+    <div class="takeaway"><strong>Read the flow:</strong> h_2 isn't computed from x_2 alone — the <code>0.5&times;0.664</code> term injects the memory of step 1. If x_1 had been different, h_1 would differ, and h_2 would shift even though x_2 stayed the same. That dependency on the past <em>is</em> memory. Run a longer sequence live below.</p>
+  </div>
+</section>
+
+<section id="demo">
+  <span class="sec-no">04</span><span class="sec-tag">Interactive</span>
+  <h2>Feed a sequence, watch the state carry forward</h2>
+  <p>Pick a sequence, then step through it one time step at a time. Each cell is the network at one moment: the input <code>x_t</code> enters, combines with the hidden state arriving from the left, and produces a new hidden state that passes to the right. The hidden state's color shows its value. Watch how the influence of the <em>first</em> input gradually dilutes as it passes through step after step — the seed of the problem 3.4 will solve.</p>
+
+  <div class="demo">
+    <div class="seqpick">
+      <span class="clabel">Sequence:</span>
+      <div class="seg" id="seqSeg">
+        <button data-s="0" class="on">Short (4)</button>
+        <button data-s="1">Medium (7)</button>
+        <button data-s="2">Long (12)</button>
+      </div>
+    </div>
+
+    <div class="rnn-svg-wrap">
+      <svg id="rnnSvg" height="200" aria-label="RNN unrolled across time steps"></svg>
+    </div>
+
+    <div class="calcbox">
+      <div class="ct">Current step calculation</div>
+      <div class="cmath" id="calcMath">Press Step to begin.</div>
+    </div>
+
+    <div class="playbar">
+      <button id="stepBtn">Step ▸</button>
+      <button id="playBtn" class="ghost">Auto-play</button>
+      <button id="resetBtn" class="ghost">Reset</button>
+    </div>
+
+    <div class="legend">
+      <span><i style="background:#0F6E56"></i>Strong positive state</span>
+      <span><i style="background:#E8D9A8"></i>Near zero</span>
+      <span><i style="background:#993C1D"></i>Strong negative</span>
+      <span><i style="background:#C9A227"></i>Trace of input #1</span>
+    </div>
+  </div>
+  <p style="font-size:14px; color:var(--mut);">The gold tint tracks how much of the <em>very first</em> input still survives in the hidden state. On the short sequence it stays visible; on the long one it fades toward nothing well before the end. The network technically "remembers" everything, but in practice the early signal gets overwritten step after step. That gap between <em>in principle</em> and <em>in practice</em> is the whole story of the next two lessons.</p>
+</section>
+
+<section id="unroll">
+  <span class="sec-no">05</span><span class="sec-tag">One loop, many steps</span>
+  <h2>Unrolling, and the shapes of sequence tasks</h2>
+  <p>An RNN is often drawn as a single cell with an arrow looping back on itself. To actually compute or train it, we <em class="k">unroll</em> it: lay out one copy of the cell per time step, in a row, with the hidden state flowing left to right. That's the picture in the demo. It's still one network with one set of weights — unrolling is just the loop stretched out in time so we can see (and backpropagate through) every step. Training this way has a name: <strong>backpropagation through time (BPTT)</strong>.</p>
+
+  <p>Because inputs and outputs can each be single or sequential, RNNs flex to many task shapes: <strong>many-to-one</strong> (read a whole review, output one sentiment), <strong>one-to-many</strong> (one image in, a caption sequence out), <strong>many-to-many</strong> aligned (tag every word with its part of speech), and <strong>sequence-to-sequence</strong> (read a full English sentence, then emit a French one — the encoder-decoder setup we'll return to in 3.7). This flexibility is why RNNs dominated language and speech for years.</p>
+</section>
+
+<section id="fade">
+  <span class="sec-no">06</span><span class="sec-tag">Where it breaks</span>
+  <h2>The memory that fades</h2>
+  <p>Here's the crack. To carry memory forward, the RNN multiplies by the same hidden-to-hidden matrix <code>W_hh</code> at every step. Reach back twenty steps and that influence has been multiplied through twenty times. If those multiplications shrink the signal (values below 1), the early information decays toward zero — the <em class="k">vanishing gradient</em> problem, now stretched across time. If they grow it (values above 1), it explodes instead. Either way, learning long-range dependencies becomes very hard.</p>
+
+  <div class="box flaw">
+    <div class="lbl">The limitation that drives 3.4 and 3.5</div>
+    <p style="margin-top:0;">Consider the sentence: <em>"I grew up in France... [fifty words later] ...so I speak fluent <strong>French</strong>."</em> To predict "French," the network must recall "France" from fifty steps back. A plain RNN's memory of that word has usually faded to nothing by then. It handles short-range context well and long-range context poorly — a serious problem, because language is full of long-range dependencies.</p>
+    <p style="margin-bottom:0;">The fix isn't to abandon recurrence — it's to give the cell a <strong>controlled memory</strong>: gates that decide what to keep, what to forget, and what to add at each step, so important information can flow across many steps untouched. That's the <strong>LSTM (3.4)</strong>, and its leaner cousin the <strong>GRU (3.5)</strong>.</p>
+  </div>
+
+  <blockquote>
+    A recurrent network can, in theory, remember everything it has read. In practice, it remembers the recent past vividly and the distant past barely at all. Closing that gap is what the next two architectures are for.
+    <cite>On the promise and the limit of recurrence</cite>
+  </blockquote>
+</section>
+
+<section id="props">
+  <span class="sec-no">07</span><span class="sec-tag">At a glance</span>
+  <h2>Properties</h2>
+  <table>
+    <tr><th>Property</th><th>Value</th><th>Notes</th></tr>
+    <tr><td><strong>Core idea</strong></td><td>Hidden state loop</td><td>A running summary fed forward through time</td></tr>
+    <tr><td><strong>Processing</strong></td><td>One step at a time</td><td>Sequential — each step depends on the previous</td></tr>
+    <tr><td><strong>Weights</strong></td><td>Shared across time</td><td>Same W_xh, W_hh, W_hy at every step → any-length input</td></tr>
+    <tr><td><strong>Activation</strong></td><td>tanh (typically)</td><td>Bounded, zero-centered — keeps the state stable</td></tr>
+    <tr><td><strong>Training</strong></td><td>BPTT</td><td>Backpropagation through the unrolled sequence</td></tr>
+    <tr><td><strong>Strength</strong></td><td>Short-range sequence</td><td>Order, variable length, recent context</td></tr>
+    <tr><td><strong>Blind spot</strong></td><td>Long-range memory</td><td>Vanishing/exploding gradients over time — motivates LSTM/GRU</td></tr>
+    <tr><td><strong>Bonus weakness</strong></td><td>Can't parallelize</td><td>Sequential by nature — slow on long sequences (key for 3.6)</td></tr>
+  </table>
+</section>
+
+<section id="bottom" style="padding-bottom:10px;">
+  <div class="bottomline">
+    <div class="lbl">Bottom Line</div>
+    <p>The RNN gives a network memory by looping a hidden state forward through time, reusing one set of weights at every step so it can read sequences of any length. It unlocked language, speech, and time-series modeling, and flexes to many task shapes from sentiment to translation. But its memory fades: multiplying by the same matrix at every step makes long-range dependencies vanish or explode, and its step-by-step nature can't be parallelized. The next lessons fix the memory with gated cells — LSTM and GRU — before 3.6 and 3.7 reveal why even those weren't enough, and what replaced them.</p>
+  </div>
+</section>
+
+<footer>
+  <p><strong>Next up — 3.4 LSTM.</strong> Gates and a protected cell state that let a network remember across hundreds of steps, in the same interactive format.</p>
+  <p style="font-size:13px;">Chapter 3 · Deep Learning Architectures &nbsp;·&nbsp; Lead AI Engineer curriculum &nbsp;·&nbsp; Track B</p>
+</footer>
+
+</div>
+
+<script>
+(function(){
+  var NS="http://www.w3.org/2000/svg";
+  var sequences=[
+    [1.0,-0.6,0.4,0.8],
+    [1.0,-0.6,0.4,0.8,-0.3,0.5,0.7],
+    [1.0,-0.6,0.4,0.8,-0.3,0.5,0.7,-0.4,0.2,0.6,-0.5,0.3]
+  ];
+  var Wxh=0.8, Whh=0.6, b=0;
+  var seqIdx=0, pos=-1, timer=null;
+
+  function el(t,a){var e=document.createElementNS(NS,t);for(var k in a)e.setAttribute(k,a[k]);return e;}
+
+  // compute hidden states and the surviving fraction of input #1
+  function compute(seq){
+    var h=[], firstTrace=[];
+    var prev=0;
+    for(var t=0;t<seq.length;t++){
+      var pre=Wxh*seq[t]+Whh*prev+b;
+      var ht=Math.tanh(pre);
+      h.push(ht);
+      // crude "trace of input 1": product of Whh-derivative-ish decay each step
+      // approximate influence of x_1 on h_t as Whh^(t) * (1-h_1^2)... simplified to Whh^t
+      firstTrace.push(t===0?1:Math.pow(Math.abs(Whh),t));
+      prev=ht;
+    }
+    return {h:h, trace:firstTrace};
+  }
+
+  function stateColor(v){ // -1..1  coral..cream..teal
+    var t=(v+1)/2;
+    var c0=[153,60,29], c1=[232,217,168], c2=[15,110,86];
+    var r,g,bb;
+    if(t<0.5){var k=t/0.5;r=c0[0]+(c1[0]-c0[0])*k;g=c0[1]+(c1[1]-c0[1])*k;bb=c0[2]+(c1[2]-c0[2])*k;}
+    else{var k2=(t-0.5)/0.5;r=c1[0]+(c2[0]-c1[0])*k2;g=c1[1]+(c2[1]-c1[1])*k2;bb=c1[2]+(c2[2]-c1[2])*k2;}
+    return "rgb("+Math.round(r)+","+Math.round(g)+","+Math.round(bb)+")";
+  }
+
+  var svg=document.getElementById("rnnSvg");
+
+  function draw(){
+    var seq=sequences[seqIdx];
+    var res=compute(seq);
+    var n=seq.length;
+    var cw=92, gap=8, padL=46, padT=20;
+    var W=padL + n*(cw) + 20;
+    svg.setAttribute("width", W);
+    svg.setAttribute("viewBox","0 0 "+W+" 200");
+    svg.innerHTML="";
+
+    // h_0 label on far left
+    svg.appendChild(Object.assign(el("text",{x:8,y:96,"font-size":"11","font-family":"monospace",fill:"#6b6253"}),{textContent:""}));
+    var h0=el("text",{x:6,y:96,"font-size":"11","font-family":"monospace",fill:"#9a8f7d"}); h0.textContent="h₀=0"; svg.appendChild(h0);
+
+    var prevCx=padL-6, prevCy=88;
+
+    for(var t=0;t<n;t++){
+      var cx=padL + t*cw;
+      var active = t<=pos;
+      var cellX=cx, cellY=46, cellW=cw-gap, cellH=58;
+
+      // hidden-state arrow from previous cell
+      var arrCol = active?"#C9A227":"#D8CFC0";
+      var arrW = active? (1.2+3.2*res.trace[t]) : 1.2;
+      svg.appendChild(el("line",{x1:prevCx,y1:88,x2:cellX-2,y2:88,stroke:arrCol,
+        "stroke-width":arrW.toFixed(2),"stroke-linecap":"round"}));
+
+      // input node (below)
+      var inActive=active;
+      svg.appendChild(el("rect",{x:cellX+ (cellW-44)/2,y:140,width:44,height:30,rx:6,
+        fill: inActive?"#FBF7F0":"#F1ECE2", stroke: inActive?"#C9A227":"#D8CFC0","stroke-width":1.2}));
+      var xt=el("text",{x:cellX+cellW/2,y:159,"text-anchor":"middle","font-size":"12",
+        "font-family":"monospace","font-weight":"600",fill: inActive?"#33302a":"#b3a995"});
+      xt.textContent=seq[t].toFixed(1);
+      svg.appendChild(xt);
+      // input -> cell arrow
+      svg.appendChild(el("line",{x1:cellX+cellW/2,y1:138,x2:cellX+cellW/2,y2:106,
+        stroke:inActive?"#C9A227":"#D8CFC0","stroke-width":1.2,"stroke-linecap":"round"}));
+      var xlab=el("text",{x:cellX+cellW/2,y:185,"text-anchor":"middle","font-size":"10",
+        "font-family":"monospace",fill:"#9a8f7d"}); xlab.textContent="x"+(t+1); svg.appendChild(xlab);
+
+      // the cell (hidden state)
+      var fill = active? stateColor(res.h[t]) : "#FBF7F0";
+      svg.appendChild(el("rect",{x:cellX,y:cellY,width:cellW,height:cellH,rx:9,
+        fill:fill, stroke: (t===pos)?"#2B2620":"#D8CFC0","stroke-width":(t===pos)?2.5:1}));
+      var htxt = active? res.h[t].toFixed(2) : "·";
+      var lum = active? (res.h[t]>0.15?"#f3ecd9":(res.h[t]<-0.15?"#f3ecd9":"#33302a")) : "#b3a995";
+      var hv=el("text",{x:cellX+cellW/2,y:cellY+cellH/2+5,"text-anchor":"middle","font-size":"14",
+        "font-family":"monospace","font-weight":"700",fill:lum});
+      hv.textContent = active? ("h="+htxt) : "h?";
+      svg.appendChild(hv);
+
+      prevCx=cellX+cellW; prevCy=88;
+    }
+
+    // calc text
+    var cm=document.getElementById("calcMath");
+    if(pos<0){ cm.innerHTML="Press <b>Step</b> to feed the first input."; }
+    else{
+      var prevH = pos===0?0:res.h[pos-1];
+      cm.innerHTML =
+        "h<sub>"+(pos+1)+"</sub> = tanh( "+Wxh+"&times;"+seq[pos].toFixed(1)+
+        "  +  "+Whh+"&times;"+prevH.toFixed(3)+" )<br>"+
+        "&nbsp;&nbsp;&nbsp;&nbsp; = tanh("+(Wxh*seq[pos]+Whh*prevH).toFixed(3)+") = <b>"+res.h[pos].toFixed(3)+"</b>"+
+        (pos>0?"<br><span style='color:#6b6253'>the "+Whh+"&times;"+prevH.toFixed(3)+" term carries the past forward</span>":"");
+    }
+  }
+
+  function step(){
+    var seq=sequences[seqIdx];
+    pos++;
+    if(pos>=seq.length){ pos=seq.length-1; if(timer){clearInterval(timer);timer=null;document.getElementById("playBtn").textContent="Auto-play";} }
+    draw();
+  }
+  function reset(){ pos=-1; draw(); }
+
+  document.getElementById("stepBtn").addEventListener("click",function(){
+    if(timer){clearInterval(timer);timer=null;document.getElementById("playBtn").textContent="Auto-play";}
+    var seq=sequences[seqIdx]; if(pos<seq.length-1) step();
+  });
+  document.getElementById("resetBtn").addEventListener("click",function(){
+    if(timer){clearInterval(timer);timer=null;document.getElementById("playBtn").textContent="Auto-play";}
+    reset();
+  });
+  document.getElementById("playBtn").addEventListener("click",function(){
+    var b2=this;
+    if(timer){clearInterval(timer);timer=null;b2.textContent="Auto-play";}
+    else{ if(pos>=sequences[seqIdx].length-1) reset(); b2.textContent="Pause"; timer=setInterval(step,650); }
+  });
+  var seg=document.getElementById("seqSeg");
+  seg.querySelectorAll("button").forEach(function(btn){
+    btn.addEventListener("click",function(){
+      seg.querySelectorAll("button").forEach(function(x){x.classList.remove("on");});
+      btn.classList.add("on"); seqIdx=parseInt(btn.getAttribute("data-s"));
+      if(timer){clearInterval(timer);timer=null;document.getElementById("playBtn").textContent="Auto-play";}
+      reset();
+    });
+  });
+
+  draw();
+})();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3.7 The Need for Attention — Deep Learning Architectures</title>
+<style>
+  :root{
+    --cream:#F5F0E8; --cream2:#FBF7F0; --charcoal:#2B2620; --ink:#4a4030;
+    --gold:#C9A227; --gold-soft:#E8D9A8; --line:#E0D8C8; --line2:#D8CFC0;
+    --teal:#0F6E56; --coral:#993C1D; --blue:#185FA5; --mut:#6b6253;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{margin:0; background:var(--cream); color:var(--charcoal);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65; font-size:16px;}
+  .wrap{max-width:860px; margin:0 auto; padding:0 24px;}
+
+  .topnav{position:sticky; top:0; z-index:50; background:rgba(245,240,232,.92);
+    backdrop-filter:blur(8px); border-bottom:1px solid var(--line2);}
+  .topnav .wrap{display:flex; gap:6px; flex-wrap:wrap; align-items:center; padding-top:10px; padding-bottom:10px;}
+  .topnav a{font-size:12.5px; text-decoration:none; color:var(--ink);
+    padding:5px 11px; border-radius:20px; border:1px solid transparent; white-space:nowrap;}
+  .topnav a:hover{background:var(--cream2); border-color:var(--line2);}
+  .topnav a.brand{font-weight:700; color:var(--charcoal); padding-left:0; margin-right:6px;}
+  .topnav a.brand:hover{background:none; border-color:transparent;}
+
+  header.hero{padding:56px 0 34px;}
+  .eyebrow{display:inline-block; font-size:12px; letter-spacing:.16em; text-transform:uppercase;
+    color:var(--gold); font-weight:700; border:1px solid var(--gold-soft);
+    padding:5px 12px; border-radius:20px; background:var(--cream2);}
+  h1{font-size:40px; line-height:1.1; margin:20px 0 8px; font-weight:800; letter-spacing:-.02em;}
+  .sub{font-size:18px; color:var(--mut); max-width:640px;}
+  .rule{height:3px; width:88px; background:var(--gold); border-radius:2px; margin:26px 0 0;}
+
+  section{padding:34px 0; border-top:1px solid var(--line);}
+  .sec-no{font-size:13px; font-weight:700; color:var(--gold); letter-spacing:.12em; text-transform:uppercase;}
+  .sec-tag{font-size:13px; color:var(--mut); margin-left:8px;}
+  h2{font-size:27px; margin:8px 0 6px; font-weight:800; letter-spacing:-.01em;}
+  h3{font-size:18px; margin:26px 0 6px; font-weight:700; color:var(--ink);
+     border-bottom:1px solid var(--line); padding-bottom:5px;}
+  p{margin:12px 0;}
+  .lead{font-size:17px;}
+  em.k{font-style:normal; font-weight:700; color:var(--charcoal); background:var(--gold-soft); padding:0 4px; border-radius:3px;}
+
+  .box{border-radius:12px; padding:18px 20px; margin:18px 0; border:1px solid var(--line2);}
+  .box .lbl{font-size:11px; letter-spacing:.14em; text-transform:uppercase; font-weight:700; margin-bottom:6px;}
+  .analogy{background:var(--cream2); border-left:4px solid var(--gold); border-radius:0 12px 12px 0;}
+  .analogy .lbl{color:var(--gold);}
+  .formula{background:var(--charcoal); color:#f3ecd9; border:none; font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace;}
+  .formula .lbl{color:var(--gold-soft);}
+  .formula pre{margin:0; font-size:13.5px; line-height:1.7; white-space:pre-wrap; overflow-x:auto;}
+  .formula .note{color:#b8ab8a; font-size:12.5px; margin-top:10px; font-family:inherit;}
+  .worked{background:#fff; border:1px solid var(--line2);}
+  .worked .lbl{color:var(--teal);}
+  .worked pre{margin:0; font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace;
+    font-size:13px; line-height:1.75; white-space:pre-wrap; overflow-x:auto; color:#33302a;}
+  .worked .takeaway{margin-top:12px; padding-top:12px; border-top:1px dashed var(--line2);
+    font-size:14px; color:var(--ink);}
+  .flaw{background:#FAECE7; border-left:4px solid var(--coral); border-radius:0 12px 12px 0;}
+  .flaw .lbl{color:var(--coral);}
+  .win{background:#E6F1EC; border-left:4px solid var(--teal); border-radius:0 12px 12px 0;}
+  .win .lbl{color:var(--teal);}
+
+  blockquote{margin:22px 0; padding:4px 0 4px 22px; border-left:3px solid var(--gold);
+    font-size:19px; font-style:italic; color:var(--ink); line-height:1.5;}
+  blockquote cite{display:block; font-size:13px; font-style:normal; color:var(--mut); margin-top:8px;}
+
+  table{width:100%; border-collapse:collapse; margin:18px 0; font-size:14.5px;}
+  th{background:var(--charcoal); color:#fff; text-align:left; padding:10px 13px; font-weight:600;}
+  th:first-child{border-radius:8px 0 0 0;} th:last-child{border-radius:0 8px 0 0;}
+  td{border:1px solid var(--line2); padding:9px 13px; vertical-align:top;}
+  tr:nth-child(even) td{background:var(--cream2);}
+  td strong{color:var(--charcoal);}
+
+  .bottomline{background:var(--charcoal); color:#f3ecd9; border-radius:12px; padding:22px 24px; margin:22px 0 0;}
+  .bottomline .lbl{color:var(--gold); font-size:11px; letter-spacing:.14em; text-transform:uppercase; font-weight:700;}
+  .bottomline p{margin:8px 0 0; color:#ece4d2;}
+
+  /* demo */
+  .demo{background:#fff; border:1px solid var(--line2); border-radius:14px; padding:22px; margin:20px 0;}
+  .demo .hint{font-size:13px; color:var(--mut); margin:0 0 14px;}
+  .sentpick{display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:14px;}
+  .sentpick .clabel{font-size:13px; color:var(--ink); font-weight:600; margin-right:4px;}
+  .seg button{font-size:12px; padding:7px 12px; border:1px solid var(--line2);
+    background:var(--cream2); border-radius:7px; cursor:pointer; color:var(--ink);}
+  .seg button.on{background:var(--gold); color:#fff; border-color:var(--gold); font-weight:600;}
+  .attn-svg-wrap{overflow-x:auto;}
+  svg{display:block; margin:0 auto;}
+  .wrow{display:flex; gap:8px; flex-wrap:wrap; justify-content:center; margin-top:6px;}
+  .weights{background:var(--cream2); border-radius:10px; padding:13px 15px; margin-top:14px;}
+  .weights .wt{font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--mut); font-weight:700; margin-bottom:8px;}
+  .wbar{display:flex; align-items:center; gap:10px; margin-bottom:6px;}
+  .wbar .ww{font-size:13px; font-family:"SF Mono",monospace; min-width:70px; color:var(--ink);}
+  .wbar .wtrack{flex:1; height:14px; background:#EFE9DE; border-radius:7px; overflow:hidden;}
+  .wbar .wfill{height:100%; background:var(--gold); border-radius:7px; transition:width .3s;}
+  .wbar .wnum{font-size:12px; font-family:"SF Mono",monospace; min-width:42px; text-align:right; color:var(--mut);}
+  .demo .pick-note{font-size:13px; color:var(--mut); margin-top:12px;}
+
+  footer{padding:40px 0 70px; border-top:1px solid var(--line); color:var(--mut); font-size:14px;}
+  .endcard{background:var(--cream2); border:1px solid var(--gold-soft); border-radius:14px; padding:22px 24px; margin:24px 0;}
+  .endcard h3{border:none; margin-top:0; color:var(--charcoal);}
+
+  @media (max-width:560px){h1{font-size:31px;} h2{font-size:23px;} .wrap{padding:0 16px;}}
+</style>
+</head>
+<body>
+
+<nav class="topnav"><div class="wrap">
+  <a href="#top" class="brand">Ch 3 · Deep Learning Architectures</a>
+  <a href="#intro">Intro</a>
+  <a href="#analogy">Analogy</a>
+  <a href="#how">The idea</a>
+  <a href="#demo">Live demo</a>
+  <a href="#math">The math</a>
+  <a href="#qkv">Q, K, V</a>
+  <a href="#bridge">The bridge</a>
+  <a href="#bottom">Bottom line</a>
+</div></nav>
+
+<div class="wrap" id="top">
+
+<header class="hero" id="intro">
+  <span class="eyebrow">3.7 · The Need for Attention</span>
+  <h1>Look at Everything, Weigh What Matters</h1>
+  <p class="sub">The idea that dissolved every limitation of recurrence at once — letting each word look directly at every other word and decide, on the fly, which ones matter. The finale of Chapter 3, and the doorway to the Transformer.</p>
+  <div class="rule"></div>
+</header>
+
+<section style="border-top:none; padding-top:8px;">
+  <p class="lead">In 3.6 we laid out exactly what recurrence couldn't do: process in parallel, connect distant tokens directly, or avoid squeezing everything through one fixed-size memory. We even sketched, in negative space, what a fix would have to look like. This lesson introduces that fix. It's a single mechanism — <em class="k">attention</em> — and understanding it is the bridge from everything you've learned so far into Chapter 4, where the Transformer is built entirely out of it.</p>
+
+  <p>The motivating failure was translation. A sequence-to-sequence RNN read an entire source sentence, crushed it into one fixed vector, and asked the decoder to generate the translation from that single summary. For short sentences it worked; for long ones, the <em class="k">context bottleneck</em> lost detail badly — the model would forget the beginning of a sentence by the time it reached the end. In 2014, Bahdanau and colleagues asked: instead of forcing everything through one vector, what if the decoder could <em>look back</em> at every source word, and focus on the relevant ones for each word it generates? That "looking back and focusing" is attention.</p>
+</section>
+
+<section id="analogy">
+  <span class="sec-no">01</span><span class="sec-tag">Building the intuition</span>
+  <h2>An open-book exam, not a memory test</h2>
+  <div class="box analogy">
+    <div class="lbl">Analogy</div>
+    <p style="margin-top:0;">A plain RNN translator is like a student who reads a paragraph once, closes the book, and must answer every question from memory alone. Everything rides on what they managed to retain in a single mental summary — and for a long paragraph, the early details are gone. That's the fixed-context bottleneck.</p>
+    <p style="margin-bottom:0;">Attention turns it into an <strong>open-book exam</strong>. For each question, the student can glance back at the whole text and <em>focus on the relevant sentences</em> — heavily weighting the parts that matter, ignoring the rest. They don't need to have memorized everything, because they can look. And crucially, every question gets its <em>own</em> custom focus: translating "bank" looks back at "river" if it's there, or "money" if it isn't. Attention is the network deciding, for each word it produces, where to look and how hard.</p>
+  </div>
+</section>
+
+<section id="how">
+  <span class="sec-no">02</span><span class="sec-tag">The core idea</span>
+  <h2>How attention works, in three moves</h2>
+  <p>Strip attention to its essence and it's three steps. First, <strong>score</strong>: for the word you're focused on, compute a relevance score against every other word — how much should this one pay attention to that one? Second, <strong>normalize</strong>: pass those scores through a softmax (recall Chapter 2 — softmax turns a vector of numbers into weights that sum to 1) so they become a clean distribution of "focus." Third, <strong>blend</strong>: take a weighted sum of all the words' values using those weights, producing a new representation that mixes in the most relevant context.</p>
+
+  <p>The profound part is what this buys you. Every word connects to every other word <strong>directly</strong> — a path length of one, no walking the chain (limitation 2, gone). All words are scored <strong>simultaneously</strong> — fully parallel, no waiting on the previous step (limitation 1, gone). And nothing is forced through a single fixed vector — the model attends to <strong>all</strong> positions (limitation 3, gone). One mechanism, all three walls of 3.6 dissolved at once. That's why it didn't improve recurrence — it replaced it.</p>
+</section>
+
+<section id="demo">
+  <span class="sec-no">03</span><span class="sec-tag">Interactive</span>
+  <h2>Click a word, watch it attend</h2>
+  <p class="hint">Click any word in the sentence. Lines fan out to every other word, with thickness and darkness showing how much attention that word pays to each one. The bars below give the exact weights — and they always sum to 1, because softmax makes them a distribution of focus.</p>
+
+  <div class="demo">
+    <div class="sentpick">
+      <span class="clabel">Sentence:</span>
+      <div class="seg" id="sentSeg">
+        <button data-s="0" class="on">The animal didn't cross…</button>
+        <button data-s="1">The river bank example</button>
+      </div>
+    </div>
+
+    <div class="attn-svg-wrap">
+      <svg id="attnSvg" height="180" aria-label="Attention weights fanning from the selected word"></svg>
+    </div>
+
+    <div class="weights">
+      <div class="wt" id="wTitle">Click a word to see its attention weights</div>
+      <div id="wBars"></div>
+    </div>
+    <p class="pick-note" id="pickNote">The classic example: click <b>"it"</b> and watch attention flow to <b>"animal"</b> — the word it refers to. The network learns to resolve what "it" means by attending to the right earlier word, across any distance, in one direct hop.</p>
+  </div>
+  <p style="font-size:14px; color:var(--mut);">This is the whole idea made visible. "it" reaches back to "animal" directly — no chain of hidden states to walk, no decay over distance. Change the sentence and "bank" leans toward "river" or "money" depending on context. The weights are learned, but the mechanism is exactly this: score every word, soften into focus, blend. Chapter 4 will show these weights come from learned Query, Key, and Value projections — previewed just below.</p>
+</section>
+
+<section id="math">
+  <span class="sec-no">04</span><span class="sec-tag">Numbers on paper</span>
+  <h2>Worked example — attention as weighted focus</h2>
+  <p>One word attends to three others. We score, softmax into weights, then blend their values.</p>
+
+  <div class="box worked">
+    <div class="lbl">Worked Example · score → softmax → blend</div>
+<pre>Focus word relevance scores against 3 words:
+   score(river)  = 4.0
+   score(the)    = 1.0
+   score(money)  = 0.5
+
+STEP 1 — softmax the scores into focus weights:
+   e^4.0=54.6,  e^1.0=2.72,  e^0.5=1.65   (sum=58.9)
+   w(river)  = 54.6 / 58.9 = 0.927
+   w(the)    =  2.72 / 58.9 = 0.046
+   w(money)  =  1.65 / 58.9 = 0.028
+   (weights sum to 1.0 — a distribution of focus)
+
+STEP 2 — blend the words' value vectors by weight:
+   output = 0.927&middot;V(river) + 0.046&middot;V(the) + 0.028&middot;V(money)
+          ≈ mostly "river", a touch of the rest
+
+Result: the focus word's new representation is dominated
+by "river" — it attended where it mattered.</pre>
+    <div class="takeaway"><strong>Read the result:</strong> softmax turned raw scores into clean focus weights (0.93 on "river"), and the output is a weighted blend dominated by the most relevant word. No recurrence, no chain — just direct, weighted looking. Every word does this against every other, all at once.</p>
+  </div>
+</section>
+
+<section id="qkv">
+  <span class="sec-no">05</span><span class="sec-tag">The preview</span>
+  <h2>Where the scores come from — Query, Key, Value</h2>
+  <p>One question remains: where do the relevance scores come from? This is the part Chapter 4 builds in full, but here's the intuition so the transition is smooth. Each word is projected into three learned vectors:</p>
+
+  <div class="box formula">
+    <div class="lbl">Formula · scaled dot-product attention (the Transformer's core)</div>
+<pre>Each word becomes three learned vectors:
+   Query (Q)  — "what am I looking for?"
+   Key   (K)  — "what do I offer to others?"
+   Value (V)  — "what do I actually contribute?"
+
+Score = how well a Query matches each Key (a dot product).
+Then soften and blend the Values:
+
+   Attention(Q,K,V) = softmax( Q&middot;Kᵀ / √d ) &middot; V
+                       └── the focus weights ──┘  └ blend ┘</pre>
+    <div class="note">The Query–Key match is the "score" step from the demo; the softmax is the "normalize" step; multiplying by V is the "blend" step. The √d just keeps the numbers stable. That single line — softmax(QKᵀ/√d)·V — is the engine of every Transformer, and therefore of GPT, Claude, Gemini, and Llama. You now have the intuition for all of it.</div>
+  </div>
+
+  <div class="box win">
+    <div class="lbl">The 2017 leap</div>
+    <p style="margin-top:0;">Attention first arrived as an <em>add-on</em> to RNNs in 2014, relieving the translation bottleneck while recurrence still did the heavy lifting. Then in 2017, the paper "Attention Is All You Need" took the radical step its title promised: <strong>remove the recurrence entirely</strong> and build the whole network from attention. With recurrence gone, every position could finally be processed in parallel, and the Transformer was born — the architecture behind essentially every large language model since.</p>
+    <p style="margin-bottom:0;">That is the doorway out of Chapter 3 and into Chapter 4.</p>
+  </div>
+
+  <blockquote>
+    Recurrence asked the network to remember the past. Attention let it simply look at the past — all of it, directly, and all at once. That shift from remembering to looking is the single most consequential idea in modern AI.
+    <cite>On the move that defined the era</cite>
+  </blockquote>
+</section>
+
+<section id="bridge">
+  <span class="sec-no">06</span><span class="sec-tag">Looking back</span>
+  <h2>Chapter 3, in one arc</h2>
+  <p>Step back and see the whole journey. The <strong>MLP (3.1)</strong> gave us depth and non-linearity, but was blind to structure. The <strong>CNN (3.2)</strong> added a sense of space for images. The <strong>RNN (3.3)</strong> added memory for sequences, and the <strong>LSTM (3.4)</strong> and <strong>GRU (3.5)</strong> protected that memory across long distances. Then <strong>3.6</strong> revealed the ceiling no amount of gating could lift — sequential computation and chain-length path — and <strong>attention (3.7)</strong> dissolved it by letting every position connect to every other directly and in parallel.</p>
+
+  <div class="endcard">
+    <h3>Where Chapter 4 picks up</h3>
+    <p style="margin-bottom:0;">You now hold the complete intuition for attention: score, soften, blend, with Query/Key/Value as the source of the scores. Chapter 4 builds the full Transformer on top of it — multi-head attention, positional encoding, the encoder–decoder stack, and how these assemble into the models powering modern AI. Everything from here forward stands on the foundation you just finished building.</p>
+  </div>
+</section>
+
+<section id="props2" style="border-top:1px solid var(--line);">
+  <span class="sec-no">07</span><span class="sec-tag">At a glance</span>
+  <h2>Properties</h2>
+  <table>
+    <tr><th>Property</th><th>Value</th><th>Notes</th></tr>
+    <tr><td><strong>Core operation</strong></td><td>Score → softmax → blend</td><td>Weighted focus over all positions</td></tr>
+    <tr><td><strong>Path length</strong></td><td>O(1)</td><td>Every token reaches every other directly</td></tr>
+    <tr><td><strong>Parallelism</strong></td><td>Full</td><td>All positions scored at once — no sequential wait</td></tr>
+    <tr><td><strong>Context</strong></td><td>All positions</td><td>No fixed-size bottleneck — attends to everything</td></tr>
+    <tr><td><strong>Source of scores</strong></td><td>Query · Key</td><td>Learned projections; softmax(QKᵀ/√d)·V</td></tr>
+    <tr><td><strong>First use</strong></td><td>RNN add-on (2014)</td><td>Relieved the seq2seq translation bottleneck</td></tr>
+    <tr><td><strong>The leap</strong></td><td>Transformer (2017)</td><td>"Attention Is All You Need" — recurrence removed</td></tr>
+    <tr><td><strong>Legacy</strong></td><td>Powers modern LLMs</td><td>GPT, Claude, Gemini, Llama — all attention-based</td></tr>
+  </table>
+</section>
+
+<section id="bottom" style="padding-bottom:10px;">
+  <div class="bottomline">
+    <div class="lbl">Bottom Line</div>
+    <p>Attention is the idea that let a network look at everything and weigh what matters, instead of remembering a compressed summary. It scores every word against every other, softens those scores into a distribution of focus, and blends the values accordingly — giving direct connections, full parallelism, and no fixed bottleneck, all at once. It dissolved every limitation of recurrence that 3.6 identified, first as an add-on to RNNs and then, in 2017, as a complete replacement for them. With the Query/Key/Value intuition in hand, you've reached the end of Chapter 3 and the threshold of the Transformer — the architecture Chapter 4 builds, and the engine of every modern large language model.</p>
+  </div>
+</section>
+
+<footer>
+  <p><strong>Chapter 3 complete.</strong> Next: Chapter 4 — Transformer Architecture. Attention, scaled up into the architecture that changed everything.</p>
+  <p style="font-size:13px;">Chapter 3 · Deep Learning Architectures &nbsp;·&nbsp; Lead AI Engineer curriculum &nbsp;·&nbsp; Track B</p>
+</footer>
+
+</div>
+
+<script>
+(function(){
+  var NS="http://www.w3.org/2000/svg";
+  // sentences with learned-ish attention weight matrices (each row sums to 1)
+  var data=[
+    {
+      words:["The","animal","didn't","cross","the","street","because","it","was","tired"],
+      // attention FROM each word TO others (rows). "it"(7) -> "animal"(1) strong.
+      attn:null, // computed below for clarity
+      special:7, note:'Click <b>"it"</b> — attention flows to <b>"animal"</b>, the word it refers to.'
+    },
+    {
+      words:["I","sat","by","the","river","bank","at","dawn"],
+      attn:null,
+      special:5, note:'Click <b>"bank"</b> — attention leans to <b>"river"</b>, fixing its meaning.'
+    }
+  ];
+
+  // build attention matrices with hand-tuned focus that "makes sense"
+  function buildAttn(words, focusMap){
+    var n=words.length, M=[];
+    for(var i=0;i<n;i++){
+      var row=new Array(n).fill(0);
+      // base: mild self + mild neighbors
+      for(var j=0;j<n;j++){
+        var s=0.3;
+        if(j===i) s=1.2;
+        else if(Math.abs(j-i)===1) s=0.6;
+        if(focusMap[i] && focusMap[i][j]!==undefined) s=focusMap[i][j];
+        row[j]=Math.exp(s);
+      }
+      var sum=row.reduce(function(a,b){return a+b;},0);
+      M.push(row.map(function(v){return v/sum;}));
+    }
+    return M;
+  }
+  // sentence 0 focus tuning
+  data[0].attn=buildAttn(data[0].words, {
+    7:{7:1.0,1:3.2,9:2.0,3:1.4},      // it -> animal, tired, cross
+    9:{9:1.0,1:2.6,7:1.8},            // tired -> animal, it
+    3:{3:1.0,1:2.4,5:2.4},            // cross -> animal, street
+    5:{5:1.0,3:2.2,1:1.6}             // street -> cross, animal
+  });
+  data[1].attn=buildAttn(data[1].words, {
+    5:{5:1.0,4:3.4,2:1.6},            // bank -> river, by
+    4:{4:1.0,5:2.4,2:1.6},            // river -> bank, by
+    1:{1:1.0,0:2.0,4:1.6}            // sat -> I, river
+  });
+
+  var sIdx=0, sel=-1;
+  var svg=document.getElementById("attnSvg");
+
+  function el(t,a){var e=document.createElementNS(NS,t);for(var k in a)e.setAttribute(k,a[k]);return e;}
+
+  function layout(){
+    var words=data[sIdx].words, n=words.length;
+    var pad=30, avail=800-2*pad;
+    var step=avail/(n-1);
+    var xs=[];
+    for(var i=0;i<n;i++) xs.push(pad+i*step);
+    return {xs:xs, W:800, yTop:54, yBot:128};
+  }
+
+  function draw(){
+    var words=data[sIdx].words, n=words.length, A=data[sIdx].attn;
+    var L=layout();
+    svg.setAttribute("width", L.W); svg.setAttribute("viewBox","0 0 "+L.W+" 180");
+    svg.innerHTML="";
+
+    // arcs from selected word
+    if(sel>=0){
+      for(var j=0;j<n;j++){
+        if(j===sel) continue;
+        var w=A[sel][j];
+        if(w<0.02) continue;
+        var x1=L.xs[sel], x2=L.xs[j];
+        var midx=(x1+x2)/2, lift=Math.min(46, 14+Math.abs(x2-x1)*0.18);
+        var path="M "+x1+" "+L.yTop+" Q "+midx+" "+(L.yTop-lift)+" "+x2+" "+L.yTop;
+        svg.appendChild(el("path",{d:path, fill:"none",
+          stroke:"#C9A227","stroke-width":(0.6+w*11).toFixed(2),
+          "stroke-opacity":(0.15+w*0.8).toFixed(2),"stroke-linecap":"round"}));
+      }
+    }
+
+    // word boxes
+    for(var i=0;i<n;i++){
+      var isSel=(i===sel);
+      var wd=Math.max(34, words[i].length*8.5+16);
+      var bx=L.xs[i]-wd/2;
+      var g=el("g",{style:"cursor:pointer"});
+      g.addEventListener("click",(function(idx){return function(){ sel=idx; draw(); };})(i));
+      g.appendChild(el("rect",{x:bx,y:L.yTop+2,width:wd,height:30,rx:7,
+        fill: isSel?"#2B2620":"#FBF7F0",
+        stroke: isSel?"#2B2620":"#D8CFC0","stroke-width": isSel?2:1}));
+      var t=el("text",{x:L.xs[i],y:L.yTop+22,"text-anchor":"middle","font-size":"13",
+        "font-family":"sans-serif","font-weight": isSel?"700":"500",
+        fill: isSel?"#f3ecd9":"#33302a"});
+      t.textContent=words[i]; g.appendChild(t);
+      svg.appendChild(g);
+    }
+
+    // hint label
+    var hint=el("text",{x:L.W/2,y:170,"text-anchor":"middle","font-size":"12",
+      "font-family":"sans-serif",fill:"#9a8f7d"});
+    hint.textContent = sel<0 ? "↑ click any word" : ('"'+words[sel]+'" attends most to "'+topWord(A[sel],words,sel)+'"');
+    svg.appendChild(hint);
+
+    drawBars();
+  }
+
+  function topWord(row,words,sel){
+    var best=-1,bi=0;
+    for(var j=0;j<row.length;j++){ if(j!==sel && row[j]>best){best=row[j];bi=j;} }
+    return words[bi];
+  }
+
+  function drawBars(){
+    var words=data[sIdx].words, A=data[sIdx].attn;
+    var title=document.getElementById("wTitle"), bars=document.getElementById("wBars");
+    if(sel<0){ title.textContent="Click a word to see its attention weights"; bars.innerHTML=""; return; }
+    title.innerHTML='Attention from <b style="color:#2B2620">"'+words[sel]+'"</b> →';
+    var row=A[sel].map(function(v,j){return {w:words[j],v:v,j:j};});
+    row.sort(function(a,b){return b.v-a.v;});
+    var html="";
+    row.slice(0,6).forEach(function(r){
+      html+='<div class="wbar"><span class="ww">'+r.w+(r.j===sel?" (self)":"")+'</span>'+
+        '<span class="wtrack"><span class="wfill" style="width:'+(r.v*100).toFixed(0)+'%"></span></span>'+
+        '<span class="wnum">'+r.v.toFixed(2)+'</span></div>';
+    });
+    bars.innerHTML=html;
+  }
+
+  var seg=document.getElementById("sentSeg");
+  seg.querySelectorAll("button").forEach(function(btn){
+    btn.addEventListener("click",function(){
+      seg.querySelectorAll("button").forEach(function(x){x.classList.remove("on");});
+      btn.classList.add("on"); sIdx=parseInt(btn.getAttribute("data-s"));
+      sel=data[sIdx].special;
+      document.getElementById("pickNote").innerHTML=data[sIdx].note;
+      draw();
+    });
+  });
+
+  // start with the special word pre-selected
+  sel=data[0].special;
+  draw();
+})();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3.6 Limitations of RNNs — Deep Learning Architectures</title>
+<style>
+  :root{
+    --cream:#F5F0E8; --cream2:#FBF7F0; --charcoal:#2B2620; --ink:#4a4030;
+    --gold:#C9A227; --gold-soft:#E8D9A8; --line:#E0D8C8; --line2:#D8CFC0;
+    --teal:#0F6E56; --coral:#993C1D; --blue:#185FA5; --mut:#6b6253;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{margin:0; background:var(--cream); color:var(--charcoal);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65; font-size:16px;}
+  .wrap{max-width:860px; margin:0 auto; padding:0 24px;}
+
+  .topnav{position:sticky; top:0; z-index:50; background:rgba(245,240,232,.92);
+    backdrop-filter:blur(8px); border-bottom:1px solid var(--line2);}
+  .topnav .wrap{display:flex; gap:6px; flex-wrap:wrap; align-items:center; padding-top:10px; padding-bottom:10px;}
+  .topnav a{font-size:12.5px; text-decoration:none; color:var(--ink);
+    padding:5px 11px; border-radius:20px; border:1px solid transparent; white-space:nowrap;}
+  .topnav a:hover{background:var(--cream2); border-color:var(--line2);}
+  .topnav a.brand{font-weight:700; color:var(--charcoal); padding-left:0; margin-right:6px;}
+  .topnav a.brand:hover{background:none; border-color:transparent;}
+
+  header.hero{padding:56px 0 34px;}
+  .eyebrow{display:inline-block; font-size:12px; letter-spacing:.16em; text-transform:uppercase;
+    color:var(--gold); font-weight:700; border:1px solid var(--gold-soft);
+    padding:5px 12px; border-radius:20px; background:var(--cream2);}
+  h1{font-size:40px; line-height:1.1; margin:20px 0 8px; font-weight:800; letter-spacing:-.02em;}
+  .sub{font-size:18px; color:var(--mut); max-width:640px;}
+  .rule{height:3px; width:88px; background:var(--gold); border-radius:2px; margin:26px 0 0;}
+
+  section{padding:34px 0; border-top:1px solid var(--line);}
+  .sec-no{font-size:13px; font-weight:700; color:var(--gold); letter-spacing:.12em; text-transform:uppercase;}
+  .sec-tag{font-size:13px; color:var(--mut); margin-left:8px;}
+  h2{font-size:27px; margin:8px 0 6px; font-weight:800; letter-spacing:-.01em;}
+  h3{font-size:18px; margin:26px 0 6px; font-weight:700; color:var(--ink);
+     border-bottom:1px solid var(--line); padding-bottom:5px;}
+  p{margin:12px 0;}
+  .lead{font-size:17px;}
+  em.k{font-style:normal; font-weight:700; color:var(--charcoal); background:var(--gold-soft); padding:0 4px; border-radius:3px;}
+
+  .box{border-radius:12px; padding:18px 20px; margin:18px 0; border:1px solid var(--line2);}
+  .box .lbl{font-size:11px; letter-spacing:.14em; text-transform:uppercase; font-weight:700; margin-bottom:6px;}
+  .analogy{background:var(--cream2); border-left:4px solid var(--gold); border-radius:0 12px 12px 0;}
+  .analogy .lbl{color:var(--gold);}
+  .formula{background:var(--charcoal); color:#f3ecd9; border:none; font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace;}
+  .formula .lbl{color:var(--gold-soft);}
+  .formula pre{margin:0; font-size:13.5px; line-height:1.7; white-space:pre-wrap; overflow-x:auto;}
+  .formula .note{color:#b8ab8a; font-size:12.5px; margin-top:10px; font-family:inherit;}
+  .flaw{background:#FAECE7; border-left:4px solid var(--coral); border-radius:0 12px 12px 0;}
+  .flaw .lbl{color:var(--coral);}
+  .win{background:#E6F1EC; border-left:4px solid var(--teal); border-radius:0 12px 12px 0;}
+  .win .lbl{color:var(--teal);}
+
+  /* numbered limitation cards */
+  .limits{display:grid; grid-template-columns:1fr; gap:14px; margin:18px 0;}
+  .limit{background:#fff; border:1px solid var(--line2); border-radius:12px; padding:16px 18px; border-left:4px solid var(--coral);}
+  .limit .ln{display:flex; align-items:baseline; gap:10px;}
+  .limit .lnum{font-size:22px; font-weight:800; color:var(--coral); line-height:1;}
+  .limit h4{margin:0; font-size:16px; font-weight:700;}
+  .limit p{font-size:14px; margin:8px 0 0; color:var(--ink);}
+
+  blockquote{margin:22px 0; padding:4px 0 4px 22px; border-left:3px solid var(--gold);
+    font-size:19px; font-style:italic; color:var(--ink); line-height:1.5;}
+  blockquote cite{display:block; font-size:13px; font-style:normal; color:var(--mut); margin-top:8px;}
+
+  table{width:100%; border-collapse:collapse; margin:18px 0; font-size:14.5px;}
+  th{background:var(--charcoal); color:#fff; text-align:left; padding:10px 13px; font-weight:600;}
+  th:first-child{border-radius:8px 0 0 0;} th:last-child{border-radius:0 8px 0 0;}
+  td{border:1px solid var(--line2); padding:9px 13px; vertical-align:top;}
+  tr:nth-child(even) td{background:var(--cream2);}
+  td strong{color:var(--charcoal);}
+
+  .bottomline{background:var(--charcoal); color:#f3ecd9; border-radius:12px; padding:22px 24px; margin:22px 0 0;}
+  .bottomline .lbl{color:var(--gold); font-size:11px; letter-spacing:.14em; text-transform:uppercase; font-weight:700;}
+  .bottomline p{margin:8px 0 0; color:#ece4d2;}
+
+  /* demo */
+  .demo{background:#fff; border:1px solid var(--line2); border-radius:14px; padding:22px; margin:20px 0;}
+  .seqpick{display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:16px;}
+  .seqpick .clabel{font-size:13px; color:var(--ink); font-weight:600; margin-right:4px;}
+  .seg button{font-size:12px; padding:7px 12px; border:1px solid var(--line2);
+    background:var(--cream2); border-radius:7px; cursor:pointer; color:var(--ink);}
+  .seg button.on{background:var(--gold); color:#fff; border-color:var(--gold); font-weight:600;}
+  .race{display:flex; flex-direction:column; gap:18px;}
+  .lane{}
+  .lane-head{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px;}
+  .lane-name{font-size:13px; font-weight:700; letter-spacing:.04em; text-transform:uppercase;}
+  .lane-name.seq{color:var(--coral);} .lane-name.par{color:var(--teal);}
+  .lane-timer{font-size:14px; font-variant-numeric:tabular-nums; font-weight:700; font-family:"SF Mono",monospace;}
+  .cells{display:flex; gap:6px; flex-wrap:wrap;}
+  .cell{width:34px; height:34px; border-radius:7px; border:1px solid var(--line2);
+    background:#FBF7F0; display:flex; align-items:center; justify-content:center;
+    font-size:11px; font-family:"SF Mono",monospace; color:#b3a995; transition:background .15s, color .15s, border-color .15s;}
+  .cell.done{background:var(--cell, #C9A227); color:#fff; border-color:var(--cell, #C9A227);}
+  .cell.active{box-shadow:0 0 0 3px rgba(201,162,39,.25); border-color:var(--gold);}
+  .playbar{display:flex; gap:8px; align-items:center; margin-top:18px; flex-wrap:wrap;}
+  .playbar button{font-size:13px; padding:8px 16px; border:1px solid var(--line2); background:var(--charcoal);
+    color:#fff; border-radius:8px; cursor:pointer; font-weight:600;}
+  .playbar button.ghost{background:var(--cream2); color:var(--ink);}
+  .verdict{background:var(--cream2); border-radius:10px; padding:13px 15px; margin-top:16px; font-size:14px; color:var(--ink); min-height:46px;}
+  .verdict b{color:var(--charcoal);}
+
+  footer{padding:40px 0 60px; border-top:1px solid var(--line); color:var(--mut); font-size:14px;}
+
+  @media (max-width:560px){h1{font-size:31px;} h2{font-size:23px;} .wrap{padding:0 16px;}}
+</style>
+</head>
+<body>
+
+<nav class="topnav"><div class="wrap">
+  <a href="#top" class="brand">Ch 3 · Deep Learning Architectures</a>
+  <a href="#intro">Intro</a>
+  <a href="#analogy">Analogy</a>
+  <a href="#limits">The limits</a>
+  <a href="#demo">The race</a>
+  <a href="#math">The cost</a>
+  <a href="#door">The opening</a>
+  <a href="#props">Summary</a>
+  <a href="#bottom">Bottom line</a>
+</div></nav>
+
+<div class="wrap" id="top">
+
+<header class="hero" id="intro">
+  <span class="eyebrow">3.6 · Limitations of RNNs</span>
+  <h1>The Wall Recurrence Hits</h1>
+  <p class="sub">Gating fixed memory. It could not fix speed. Why every recurrent network — RNN, LSTM, GRU alike — is capped by the one thing they all share: they must process a sequence one step at a time.</p>
+  <div class="rule"></div>
+</header>
+
+<section style="border-top:none; padding-top:8px;">
+  <p class="lead">We've spent four lessons building recurrence up — adding memory in 3.3, protecting it with gates in 3.4, streamlining it in 3.5. This lesson is the turn. It steps back and asks: for all their cleverness, what is it that the entire recurrent family <em>cannot</em> do, no matter how good the gating gets? The answer set the research agenda that produced the Transformer, and it's worth understanding precisely, because it explains why attention — the subject of 3.7 — wasn't just an improvement but a replacement.</p>
+
+  <p>There are two big limitations, and they're different in kind. One is about <em>memory</em> (the long-range decay we've been chipping away at). The other is about <em>speed</em> — and it's the one gating can't touch at all. That second limitation is the real reason recurrence fell.</p>
+</section>
+
+<section id="analogy">
+  <span class="sec-no">01</span><span class="sec-tag">Building the intuition</span>
+  <h2>A bucket brigade versus a crowd</h2>
+  <div class="box analogy">
+    <div class="lbl">Analogy</div>
+    <p style="margin-top:0;">Picture an old fire-fighting <strong>bucket brigade</strong>: a line of people passing one bucket hand to hand from the well to the fire. Person 5 cannot do anything until person 4 hands them the bucket. It doesn't matter if you have a thousand volunteers standing by — the water still moves at the pace of a single chain, one handoff at a time. Add more people to the line and it gets <em>longer</em>, not faster.</p>
+    <p style="margin-bottom:0;">That's a recurrent network. Each hidden state must wait for the previous one, so the computation is a chain of handoffs that can't be sped up by throwing more hardware at it. Now picture the alternative: a <strong>crowd</strong> where everyone can act at once, each person free to look at whoever they need to. If you have a thousand hands available, a thousand things happen simultaneously. That crowd is what attention enables — and the gap between the brigade and the crowd is the entire motivation for what comes next.</p>
+  </div>
+</section>
+
+<section id="limits">
+  <span class="sec-no">02</span><span class="sec-tag">The two walls</span>
+  <h2>What recurrence cannot escape</h2>
+
+  <div class="limits">
+    <div class="limit">
+      <div class="ln"><span class="lnum">1</span><h4>Sequential computation — no parallelism</h4></div>
+      <p>Each hidden state depends on the one before it: <code>h_t</code> needs <code>h_(t-1)</code>. So the steps must be computed in order, one after another. Modern hardware — GPUs and TPUs — is built to do thousands of operations <em>simultaneously</em>, but a recurrent network can't use that power across the time dimension. A 1,000-token sequence takes 1,000 sequential steps, full stop. This caps both training speed and inference speed, and it's the limitation gating does nothing to fix. <strong>This is the decisive one.</strong></p>
+    </div>
+    <div class="limit">
+      <div class="ln"><span class="lnum">2</span><h4>Long-range dependencies stay hard</h4></div>
+      <p>LSTMs and GRUs dramatically <em>reduced</em> the vanishing-memory problem, but they didn't eliminate it. Information from a token still has to travel step-by-step through every intermediate state to reach a distant one. Across hundreds or thousands of steps, even a gated cell's signal can weaken, and the <em>path length</em> between two related tokens grows with the distance between them. The further apart two words are, the harder it is to relate them.</p>
+    </div>
+    <div class="limit">
+      <div class="ln"><span class="lnum">3</span><h4>A fixed-size memory bottleneck</h4></div>
+      <p>An RNN compresses everything it has read into a single fixed-size hidden state vector. For a short sentence that's fine; for a long document, the whole past must be squeezed into the same small vector, and detail is inevitably lost. In sequence-to-sequence tasks like translation, forcing an entire source sentence through one fixed vector — the <em class="k">context bottleneck</em> — became a notorious failure point, and the direct trigger for the first attention mechanisms.</p>
+    </div>
+  </div>
+</section>
+
+<section id="demo">
+  <span class="sec-no">03</span><span class="sec-tag">Interactive</span>
+  <h2>The race — sequential vs parallel</h2>
+  <p>Both lanes process the same sequence. The top lane is a recurrent network: each cell can only light up <em>after</em> the one before it, so a clock ticks step by step. The bottom lane represents the parallel approach attention enables: every cell processes at once. Run them and watch the recurrent lane's time grow with the sequence length while the parallel lane finishes in essentially one tick. Then try a longer sequence and watch the gap widen.</p>
+
+  <div class="demo">
+    <div class="seqpick">
+      <span class="clabel">Sequence length:</span>
+      <div class="seg" id="seqSeg">
+        <button data-n="6" class="on">6 tokens</button>
+        <button data-n="12">12 tokens</button>
+        <button data-n="24">24 tokens</button>
+      </div>
+    </div>
+
+    <div class="race">
+      <div class="lane">
+        <div class="lane-head">
+          <span class="lane-name seq">Recurrent · one step at a time</span>
+          <span class="lane-timer" id="seqTimer" style="color:var(--coral)">0 steps</span>
+        </div>
+        <div class="cells" id="seqCells"></div>
+      </div>
+      <div class="lane">
+        <div class="lane-head">
+          <span class="lane-name par">Parallel · all at once (attention)</span>
+          <span class="lane-timer" id="parTimer" style="color:var(--teal)">0 steps</span>
+        </div>
+        <div class="cells" id="parCells"></div>
+      </div>
+    </div>
+
+    <div class="playbar">
+      <button id="raceBtn">Run the race ▸</button>
+      <button id="resetBtn" class="ghost">Reset</button>
+    </div>
+
+    <div class="verdict" id="verdict">Press <b>Run the race</b> to compare. The recurrent lane lights up sequentially; the parallel lane lights all at once.</div>
+  </div>
+  <p style="font-size:14px; color:var(--mut);">The recurrent lane always takes as many time-steps as there are tokens — double the sequence, double the wait. The parallel lane finishes in a single step regardless of length, because nothing waits on anything else. On a real 1,000-token document that difference is the gap between feasible and painfully slow, and it's why, once a parallel alternative existed, the field switched almost overnight.</p>
+</section>
+
+<section id="math">
+  <span class="sec-no">04</span><span class="sec-tag">Why, precisely</span>
+  <h2>The cost in one comparison</h2>
+  <p>The crux is a property called <em class="k">path length</em> — how many computational steps a signal must travel to get from one position to another. It determines both how fast the model runs and how easily distant tokens can influence each other.</p>
+
+  <div class="box formula">
+    <div class="lbl">The comparison that ended recurrence's reign</div>
+<pre>For a sequence of length N:
+
+  RECURRENT (RNN / LSTM / GRU)
+    Sequential operations ......... O(N)   ← N steps in order
+    Max path between two tokens ... O(N)   ← signal walks the chain
+    Parallelizable across time? ... No
+
+  ATTENTION (the 3.7 alternative)
+    Sequential operations ......... O(1)   ← all positions at once
+    Max path between two tokens ... O(1)   ← every token sees every
+                                            other directly
+    Parallelizable across time? ... Yes</pre>
+    <div class="note">Two columns, one verdict. Recurrence pays O(N) in both wall-clock steps and signal path length; attention pays O(1) in both. Shorter paths mean distant tokens relate more easily (fixing limitation 2), and O(1) sequential cost means the whole sequence computes in parallel (fixing limitation 1). One idea addresses both walls at once — which is exactly why it replaced recurrence rather than merely improving it.</div>
+  </div>
+</section>
+
+<section id="door">
+  <span class="sec-no">05</span><span class="sec-tag">The opening</span>
+  <h2>What the limits demanded</h2>
+  <p>Put the three limitations together and they describe, in negative space, exactly what a better architecture would need. It would have to let any token interact with any other <strong>directly</strong> — no walking the chain (fixing the path-length and long-range problems). It would have to process all positions <strong>in parallel</strong> — no waiting on the previous step (fixing the speed problem). And it would have to avoid cramming everything through one fixed vector — letting the model look back at <strong>all</strong> previous states, not just a compressed summary (fixing the bottleneck).</p>
+
+  <div class="box win">
+    <div class="lbl">The idea that fits the shape of the problem</div>
+    <p style="margin-top:0;">There is a single mechanism that does all three: <strong>attention</strong>. Instead of passing memory hand-to-hand down a chain, attention lets every position look directly at every other position and decide, on the fly, which ones matter — computed for all positions simultaneously. Direct connections, full parallelism, no fixed bottleneck.</p>
+    <p style="margin-bottom:0;">Attention first appeared as an <em>add-on</em> to RNNs (to relieve the translation bottleneck of limitation 3). Then in 2017 a paper titled "Attention Is All You Need" made the radical claim in its title literal: drop the recurrence entirely and keep only the attention. That architecture is the Transformer, and it's where Chapter 3 has been heading all along.</p>
+  </div>
+
+  <blockquote>
+    Recurrence solved how to remember. It never solved how to do so quickly, or how to let distant things connect directly. Attention answered both at once — and that is why it didn't refine the RNN, it retired it.
+    <cite>On why the field changed course</cite>
+  </blockquote>
+</section>
+
+<section id="props">
+  <span class="sec-no">06</span><span class="sec-tag">At a glance</span>
+  <h2>Summary of limitations</h2>
+  <table>
+    <tr><th>Limitation</th><th>Cause</th><th>Consequence</th><th>Fixed by attention?</th></tr>
+    <tr><td><strong>No parallelism</strong></td><td>h_t depends on h_(t-1)</td><td>Slow training &amp; inference; can't use parallel hardware</td><td>Yes — O(1) sequential</td></tr>
+    <tr><td><strong>Long-range decay</strong></td><td>Signal walks the chain</td><td>Distant tokens hard to relate; path length O(N)</td><td>Yes — O(1) path</td></tr>
+    <tr><td><strong>Context bottleneck</strong></td><td>Fixed-size hidden vector</td><td>Long inputs lose detail; seq2seq failures</td><td>Yes — attend to all states</td></tr>
+    <tr><td><strong>Memory (residual)</strong></td><td>Even gates aren't perfect</td><td>Very long sequences still degrade</td><td>Yes — direct connections</td></tr>
+  </table>
+</section>
+
+<section id="bottom" style="padding-bottom:10px;">
+  <div class="bottomline">
+    <div class="lbl">Bottom Line</div>
+    <p>Recurrence has a ceiling that gating cannot raise. Because each step depends on the last, RNNs, LSTMs, and GRUs all process sequences one step at a time — unable to exploit parallel hardware, forcing signals to walk a long chain between distant tokens, and squeezing everything through a single fixed-size memory. Gating eased the memory problem but left speed and path length untouched. The fix had to come from a different direction entirely: a mechanism letting every token connect to every other directly and in parallel. That mechanism is attention, and the next lesson builds the intuition for it — the idea that replaced recurrence and launched the era of the Transformer.</p>
+  </div>
+</section>
+
+<footer>
+  <p><strong>Next up — 3.7 The Need for Attention.</strong> The fixed-context bottleneck made concrete, and the core idea — letting the model look back at everything and weigh what matters — that set up the Transformer, in the same interactive format.</p>
+  <p style="font-size:13px;">Chapter 3 · Deep Learning Architectures &nbsp;·&nbsp; Lead AI Engineer curriculum &nbsp;·&nbsp; Track B</p>
+</footer>
+
+</div>
+
+<script>
+(function(){
+  var N=6, raceTimer=null;
+  var seqCells=document.getElementById("seqCells");
+  var parCells=document.getElementById("parCells");
+
+  function build(){
+    seqCells.innerHTML=""; parCells.innerHTML="";
+    for(var i=0;i<N;i++){
+      var c1=document.createElement("div"); c1.className="cell"; c1.style.setProperty("--cell","#993C1D");
+      c1.textContent=i+1; c1.id="sc"+i; seqCells.appendChild(c1);
+      var c2=document.createElement("div"); c2.className="cell"; c2.style.setProperty("--cell","#0F6E56");
+      c2.textContent=i+1; c2.id="pc"+i; parCells.appendChild(c2);
+    }
+    document.getElementById("seqTimer").textContent="0 steps";
+    document.getElementById("parTimer").textContent="0 steps";
+  }
+
+  function reset(){
+    if(raceTimer){clearInterval(raceTimer);raceTimer=null;}
+    build();
+    document.getElementById("verdict").innerHTML="Press <b>Run the race</b> to compare. The recurrent lane lights up sequentially; the parallel lane lights all at once.";
+    document.getElementById("raceBtn").textContent="Run the race ▸";
+  }
+
+  function run(){
+    if(raceTimer){clearInterval(raceTimer);raceTimer=null;}
+    build();
+    var btn=document.getElementById("raceBtn"); btn.textContent="Running…";
+    // parallel: all light on step 1
+    setTimeout(function(){
+      for(var i=0;i<N;i++){ document.getElementById("pc"+i).classList.add("done"); }
+      document.getElementById("parTimer").textContent="1 step ✓";
+    }, 380);
+
+    // sequential: one per tick
+    var i=0;
+    var prev=null;
+    raceTimer=setInterval(function(){
+      if(prev!==null) document.getElementById("sc"+prev).classList.remove("active");
+      if(i>=N){
+        clearInterval(raceTimer); raceTimer=null;
+        btn.textContent="Run the race ▸";
+        var slowdown=N;
+        document.getElementById("verdict").innerHTML=
+          "<b>"+N+" tokens:</b> the recurrent lane needed <b style='color:#993C1D'>"+N+" steps</b>, "+
+          "the parallel lane needed <b style='color:#0F6E56'>1 step</b>. "+
+          "Recurrence is <b>"+slowdown+"&times; slower</b> here — and that multiple grows with every token you add.";
+        return;
+      }
+      var cell=document.getElementById("sc"+i);
+      cell.classList.add("done","active");
+      document.getElementById("seqTimer").textContent=(i+1)+(i+1===1?" step":" steps");
+      prev=i; i++;
+    }, 380);
+  }
+
+  document.getElementById("raceBtn").addEventListener("click",run);
+  document.getElementById("resetBtn").addEventListener("click",reset);
+  var seg=document.getElementById("seqSeg");
+  seg.querySelectorAll("button").forEach(function(btn){
+    btn.addEventListener("click",function(){
+      seg.querySelectorAll("button").forEach(function(x){x.classList.remove("on");});
+      btn.classList.add("on"); N=parseInt(btn.getAttribute("data-n")); reset();
+    });
+  });
+
+  build();
+})();
+</script>
+
+</body>
+</html>
